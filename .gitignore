@@ -87,3 +87,4 @@ venv/
 ENV/
 .spyderproject
 .ropeproject
+data/
