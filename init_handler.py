@@ -56,6 +56,20 @@ class _InitHandler(object):
 
         os.remove("config_template.py")
 
+    def _init_manager(self):
+        logger.debug("make project manager {0}".format(self.project_name))
+
+        with open("init.sh", "r") as ifp:
+            init_content = ifp.read()
+
+        init_target = init_content.replace("pine", self.project_name, 1)
+
+        with open(self.project_name, "w") as mfp:
+            mfp.write(init_target)
+
+        os.chmod(self.project_name, 0744)
+        os.remove("init.sh")
+
     def _init_projects(self):
         logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
         shutil.copytree(self.template_dir, self.work_dir)
@@ -63,6 +77,7 @@ class _InitHandler(object):
         self._make_dirs()
         self._make_instance()
         self._init_config()
+        self._init_manager()
 
     def __call__(self, *args, **kwargs):
         self._init_projects()
