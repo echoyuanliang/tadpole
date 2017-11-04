@@ -32,16 +32,17 @@ class _InitHandler(object):
             if not os.path.exists(directory):
                 os.mkdir(directory)
 
-    def _init_projects(self):
-        logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
-        shutil.copytree(self.template_dir, self.work_dir)
-
-        os.chdir(self.work_dir)
-        self._make_dirs()
-
+    @staticmethod
+    def _make_instance():
+        instance_config = "instance/{0}".format(config.TEMPLATE_CONFIG)
+        logger.debug("make instance config {0}".format(instance_config))
         if "instance/" in config.TEMPLATE_DIRS_CREATE:
-            with open("instance/{0}".format(config.TEMPLATE_CONFIG), "w") as ifp:
+            with open(instance_config, "w") as ifp:
                 ifp.write(config.TEMPLATE_HEADER)
+
+    def _init_config(self):
+
+        logger.debug("make config {0}".format(config.TEMPLATE_CONFIG))
 
         with open("config_template.py", "r") as cfp:
             config_template = cfp.read()
@@ -54,6 +55,14 @@ class _InitHandler(object):
             cfp.write(config_content)
 
         os.remove("config_template.py")
+
+    def _init_projects(self):
+        logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
+        shutil.copytree(self.template_dir, self.work_dir)
+        os.chdir(self.work_dir)
+        self._make_dirs()
+        self._make_instance()
+        self._init_config()
 
     def __call__(self, *args, **kwargs):
         self._init_projects()
