@@ -2,7 +2,7 @@
 
 service_name="pine"
 
-exec="venv/bin/python venv/bin/gunicorn -c gun.py app.main:app"
+exec="venv/bin/python venv/bin/gunicorn -c gun.py run:app"
 work_dir=`pwd`
 
 RETVAL=0

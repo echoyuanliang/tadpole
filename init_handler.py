@@ -21,35 +21,59 @@ class _PyConfigMixin(object):
 
     @staticmethod
     def process_custom_config(config_dict, custom_processes):
-        config_lines, import_lines = set(), set()
+        config_lines, import_lines = list(), list()
         if custom_processes:
             for key in custom_processes:
                 if key in config_dict:
                     custom_imports, custom_config = custom_processes[key](key, config_dict.pop(key))
-                    import_lines.update(set(custom_imports))
-                    config_lines.update(custom_config)
+                    import_lines.extend(custom_imports)
+                    config_lines.extend(custom_config)
         return config_dict, import_lines, config_lines
 
-    def render_config(self, config_dict, custom_processes=None):
+    @staticmethod
+    def replace_fmt(config_content, fmt_dict):
+        for key in fmt_dict:
+            fmt_key = "{%s}" % key
+            if fmt_key in config_content:
+                config_content = config_content.replace(fmt_key, fmt_dict[key])
+
+        return config_content
+
+    @staticmethod
+    def process_key_value(key, value):
+        if isinstance(value, unicode):
+            return u"{key} = u'{value}'\n".format(key=key, value=value)
+        if isinstance(value, basestring):
+            return u"{key} = '{value}'\n".format(key=key, value=value)
+        elif isinstance(value, (list, dict)):
+            return u"{key} = {value}\n".format(
+                key=key, value=json.dumps(value, indent=4, ensure_ascii=False))
+
+        return u"{key} = {value}\n".format(key=key, value=value)
+
+    def render_config(self, config_dict, custom_processes=None, fmt_dict=None):
 
         config_dict = deepcopy(config_dict)
         config_dict, import_lines, config_lines = self.process_custom_config(
             config_dict, custom_processes)
 
-        for key, value in config_dict.items():
-            if isinstance(value, unicode):
-                config_lines.add(u"{key} = u'{value}'\n".format(key=key, value=value))
-            if isinstance(value, basestring):
-                config_lines.add(u"{key} = '{value}'\n".format(key=key, value=value))
-            elif isinstance(value, (list, dict)):
-                config_lines.add(u"{key} = {value}\n".format(
-                    key=key, value=json.dumps(value, indent=4, ensure_ascii=False)))
-            else:
-                config_lines.add(u"{key} = {value}\n".format(key=key, value=value))
+        keys = config_dict['__KEYS_ORDER'] if config_dict.get('__KEYS_ORDER') else config_dict.keys()
+
+        for key in keys:
+            if key == '\n':
+                config_lines.append(key)
+                continue
+            elif key not in config_dict or key.startswith('__'):
+                continue
+            line = self.process_key_value(key, config_dict[key])
+            config_lines.append(line)
 
         config_content = u"{headers}\n{import_lines}\n{config_lines}".format(
             headers=config.TEMPLATE_HEADER, import_lines=u''.join(import_lines),
             config_lines=u''.join(config_lines))
+
+        if fmt_dict:
+            config_content = self.replace_fmt(config_content, fmt_dict)
 
         return config_content
 
@@ -67,6 +91,12 @@ class _InitHandler(_PyConfigMixin):
         self.work_dir = os.path.join(os.getcwd(), self.project_name)
         self.cur_dir = os.path.dirname(os.path.realpath(__file__))
         self.template_dir = os.path.join(self.cur_dir, config.TEMPLATE_SRC)
+        self.fmt_dict = {
+            'app_name': self.project_name.lower(),
+            'version': self.version.lower(),
+            'owner': self.owner.lower(),
+            'email': self.email
+        }
 
     @staticmethod
     def _make_dirs():
@@ -87,11 +117,11 @@ class _InitHandler(_PyConfigMixin):
 
     @staticmethod
     def _process_gun_workers(key, workers):
-        import_lines, config_lines = set(), set()
+        import_lines, config_lines = list(), list()
 
         if isinstance(workers, int) or (
                     isinstance(workers, basestring) and workers.isdigit()):
-            config_lines.add('{0} = {1}\n'.format(key, workers))
+            config_lines.append('{0} = {1}\n'.format(key, workers))
         else:
             try:
                 wp_cpu = int(workers.split("*")[0])
@@ -102,15 +132,27 @@ class _InitHandler(_PyConfigMixin):
             if wp_cpu < 1 or wp_cpu > 10:
                 wp_cpu = 2
 
-            import_lines.add("import multiprocessing\n")
-            config_lines.add("{0} = multiprocessing.cpu_count() * {1} \n".format(key, wp_cpu))
+            import_lines.append("import multiprocessing\n")
+            config_lines.append("{0} = multiprocessing.cpu_count() * {1} \n".format(key, wp_cpu))
 
         return import_lines, config_lines
+
+    def _get_project_config(self):
+        config_dict = deepcopy(config.TEMPLATE_PROJECT)
+        config_dict.update({
+            'APP_NAME': self.project_name,
+            'VERSION': self.version,
+            'OWNER': self.owner,
+            'EMAIL': self.email
+        })
+
+        return config_dict
 
     def _init_config(self):
 
         logger.debug("make config {0}".format(config.TEMPLATE_CONF_NAME))
-        config_content = self.render_config(config.TEMPLATE_PROJECT)
+        config_dict = self._get_project_config()
+        config_content = self.render_config(config_dict, fmt_dict=self.fmt_dict)
         with codecs.open(config.TEMPLATE_CONF_NAME, "w", "utf-8") as cfp:
             cfp.write(config_content)
 
