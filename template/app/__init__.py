@@ -35,5 +35,3 @@ class Init(object):
 
 def init_app(app):
     return Init(app)()
-
-

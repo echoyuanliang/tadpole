@@ -44,5 +44,3 @@ class RedisHandler(Handler):
         key = self._get_key()
         msg = self.format(record)
         self.redis.rpush(key, msg)
-
-
