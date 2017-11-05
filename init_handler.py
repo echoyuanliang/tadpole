@@ -22,12 +22,13 @@ class _PyConfigMixin(object):
     @staticmethod
     def process_custom_config(config_dict, custom_processes):
         config_lines, import_lines = list(), list()
+        
         if custom_processes:
-            for key in custom_processes:
-                if key in config_dict:
-                    custom_imports, custom_config = custom_processes[key](key, config_dict.pop(key))
-                    import_lines.extend(custom_imports)
-                    config_lines.extend(custom_config)
+            for key in set(custom_processes).intersection(set(config_dict.keys())):
+                custom_imports, custom_config = custom_processes[key](key, config_dict.pop(key))
+                import_lines.extend(custom_imports)
+                config_lines.extend(custom_config)
+
         return config_dict, import_lines, config_lines
 
     @staticmethod
