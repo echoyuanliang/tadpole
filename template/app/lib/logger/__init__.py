@@ -60,9 +60,8 @@ class AppLogger(object):
         for logger_name, logger_config in self._app.config['LOGGERS'].items():
             self._app.logger.debug(u'init logger {0}'.format(logger_name))
 
-            if logger_config.get('disable'):
+            if logger_config.pop('disable', None):
                 continue
-            logger_config.pop('disable', None)
 
             handler_name = logger_config.pop('handler', None)
             if not handler_name:
