@@ -5,6 +5,8 @@
     create at 2017/11/4 by allen
 """
 
+# TODO: SECRET_KEY
+
 TEMPLATE_SRC = 'template/'
 TEMPLATE_HEADER = "# !/usr/bin/python\n# coding: utf-8\n"
 TEMPLATE_DIRS_CREATE = ('data/', 'logs/', 'instance/')
@@ -22,6 +24,8 @@ TEMPLATE_PROJECT = {
     'OWNER': "pine",
     'DEBUG': True,
     'EMAIL': '',
+    'REST_DB': True,
+    'SQLALCHEMY_TRACK_MODIFICATIONS ': False,
     'LOG_FORMATTER': TEMPLATE_LOG_FORMAT,
     'LOGGERS': {
         'error_log': {

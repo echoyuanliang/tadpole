@@ -2,7 +2,7 @@
 
 service_name="pine"
 
-exec="venv/bin/python venv/bin/gunicorn -c gun.py run:app"
+exec="venv/bin/python venv/bin/gunicorn -c gun.py main:app"
 work_dir=`pwd`
 
 RETVAL=0
@@ -40,7 +40,7 @@ status() {
 
 
 do_start() {
-    cd ${backend}
+    cd ${work_dir}
     num=`ps aux|grep "${exec}"|grep -v "grep"|wc -l`
     if [ $num -ne 0 ];then
         printf "${Red}${service_name} is running, Skipped try to start again.${Color_Off}\n"

@@ -40,18 +40,21 @@ class AppLogger(object):
         if formatter:
             handler.setFormatter(CustomFormatter(formatter))
         handler.setLevel(level)
-
+        self._app.logger.addHandler(handler)
         return handler
 
     @staticmethod
     def _get_handler_cls(handler_name):
+        if not handler_name:
+            raise Exception(u'logger handler is required')
+
         cls = getattr(logging, handler_name, None) or getattr(sys_handlers, handler_name, None) \
-               or getattr(custom_handlers, handler_name, None)
+            or getattr(custom_handlers, handler_name, None)
 
         if cls and issubclass(cls, logging.Handler):
             return cls
 
-        return None
+        raise Exception(u'handler {0} is not support'.format(handler_name))
 
     def __call__(self, *args, **kwargs):
         for handler in self._app.logger.handlers:
@@ -64,14 +67,9 @@ class AppLogger(object):
                 continue
 
             handler_name = logger_config.pop('handler', None)
-            if not handler_name:
-                raise Exception(u'logger handler is required')
             handler_cls = self._get_handler_cls(handler_name)
-            if not handler_cls:
-                raise Exception(u'handler {0} is not support'.format(handler_name))
 
-            handler = self.init_handler(handler_cls, logger_config)
-            self._app.logger.addHandler(handler)
+            self.init_handler(handler_cls, logger_config)
 
         return self._app.logger
 
