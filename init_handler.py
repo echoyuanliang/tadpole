@@ -42,6 +42,7 @@ class _PyConfigMixin(object):
 
     @staticmethod
     def process_key_value(key, value):
+        print(type(value), value)
         if isinstance(value, unicode):
             return u"{key} = u'{value}'\n".format(key=key, value=value)
         if isinstance(value, basestring):
@@ -109,14 +110,6 @@ class _InitHandler(_PyConfigMixin):
                 os.mkdir(directory)
 
     @staticmethod
-    def _make_instance():
-        instance_config = "instance/{0}".format(config.TEMPLATE_CONF_NAME)
-        logger.debug("make instance config {0}".format(instance_config))
-        if "instance/" in config.TEMPLATE_DIRS_CREATE:
-            with open(instance_config, "w") as ifp:
-                ifp.write(config.TEMPLATE_HEADER)
-
-    @staticmethod
     def _process_gun_workers(key, workers):
         import_lines, config_lines = list(), list()
 
@@ -151,12 +144,23 @@ class _InitHandler(_PyConfigMixin):
 
     def _init_config(self):
 
+        # init config.py
         logger.debug("make config {0}".format(config.TEMPLATE_CONF_NAME))
         config_dict = self._get_project_config()
         config_content = self.render_config(config_dict, fmt_dict=self.fmt_dict)
         with codecs.open(config.TEMPLATE_CONF_NAME, "w", "utf-8") as cfp:
             cfp.write(config_content)
 
+        # init instance/config.py
+        instance_config = "instance/{0}".format(config.TEMPLATE_CONF_NAME)
+        logger.debug("make instance config {0}".format(instance_config))
+        if "instance/" in config.TEMPLATE_DIRS_CREATE:
+            instance_dict = config.TEMPLATE_INSTANCE
+            config_content = self.render_config(instance_dict)
+            with codecs.open(instance_config, "w", "utf-8") as ifp:
+                ifp.write(config_content)
+
+        # init gun.py
         logger.debug("make config {0}".format(config.TEMPLATE_GUN_CONF))
         config_content = self.render_config(config.TEMPLATE_GUNICORN, {
             'workers': self._process_gun_workers})
@@ -182,7 +186,6 @@ class _InitHandler(_PyConfigMixin):
         shutil.copytree(self.template_dir, self.work_dir)
         os.chdir(self.work_dir)
         self._make_dirs()
-        self._make_instance()
         self._init_config()
         self._init_manager()
 

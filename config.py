@@ -5,13 +5,16 @@
     create at 2017/11/4 by allen
 """
 
-# TODO: SECRET_KEY
+import os
+from binascii import hexlify
+from base64 import b64encode
 
 TEMPLATE_SRC = 'template/'
 TEMPLATE_HEADER = "# !/usr/bin/python\n# coding: utf-8\n"
 TEMPLATE_DIRS_CREATE = ('data/', 'logs/', 'instance/')
 TEMPLATE_CONF_NAME = "config.py"
 TEMPLATE_GUN_CONF = "gun.py"
+TEMPLATE_SECRET_KEY = b64encode(hexlify(os.urandom(32))).decode("utf-8")
 
 # project config, render to config.py
 TEMPLATE_LOG_FORMAT = '%(hostname)s %(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s '
@@ -22,7 +25,7 @@ TEMPLATE_PROJECT = {
 
     'VERSION': "v0.0.1",
     'OWNER': "pine",
-    'DEBUG': True,
+    'DEBUG': False,
     'EMAIL': '',
     'REST_DB': True,
     'SQLALCHEMY_TRACK_MODIFICATIONS ': False,
@@ -69,6 +72,25 @@ TEMPLATE_PROJECT = {
             "disable": 1
         }
 
+    }
+}
+
+TEMPLATE_INSTANCE = {
+    '__KEYS_ORDER': ['DEBUG', 'SECRET_KEY', '\n',
+                     'SQLALCHEMY_DATABASE_URI', 'SQLALCHEMY_ECHO',
+                     'SQLALCHEMY_RECORD_QUERIES',
+                     'REDIS_CONFIG'],
+
+    'DEBUG': True,
+    'SECRET_KEY': TEMPLATE_SECRET_KEY,
+    'SQLALCHEMY_DATABASE_URI': 'sqlite:///data/app.db',
+    'SQLALCHEMY_ECHO': True,
+    'SQLALCHEMY_RECORD_QUERIES': True,
+
+    'REDIS_CONFIG': {
+        "host": "localhost",
+        "port": 6379,
+        "db": 1
     }
 }
 
