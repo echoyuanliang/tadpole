@@ -12,7 +12,8 @@ from relation import user_role, role_resource
 
 class Role(Model):
 
-    name = Column(db.String(32), nullable=False, default='-')
+    name = Column(db.String(32), nullable=False, default='-', index=True, unique=True)
+
     description = Column(db.String(128), nullable=False, default='-')
 
     users = db.relationship('User', secondary=user_role,

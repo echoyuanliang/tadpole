@@ -7,7 +7,9 @@
 
 
 from datetime import datetime
+from sqlalchemy import inspect
 from app.extensions.sqlalchemy import extension as db
+from app.lib.utils import get_relation_url
 import custom_types
 
 Column = db.Column
@@ -69,8 +71,24 @@ class Model(SurrogatePK, db.Model, CRUDMixin):
         return [c.name for c in cls.get_columns()]
 
     def _as_dict(self):  # for common sqlalchemy  query result to dict
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns
-                if c.name not in getattr(self, '__hide__', ())}
+        from main import app
+        hide_attrs = getattr(self, '__hide__', ())
+
+        column_dict = {c.name: getattr(self, c.name) for c in self.__table__.columns
+                       if c.name not in hide_attrs}
+
+        try:
+            for rel_name, _ in inspect(type(self)).relationships.items():
+                if rel_name in hide_attrs:
+                    continue
+
+                column_dict['__' + rel_name + '_link'] = get_relation_url(
+                    self.__tablename__, self.id, rel_name)
+
+        except Exception as e:
+            app.logger.info(str(e))
+
+        return column_dict
 
     def to_dict(self):  # for human
         return self._as_dict()
@@ -124,3 +142,4 @@ def include_custom_types(obj):
             setattr(obj, key, getattr(custom_types, key))
 
 include_custom_types(db)
+

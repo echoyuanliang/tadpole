@@ -8,7 +8,8 @@
 import json
 import datetime
 import decimal
-from flask import Flask
+from urlparse import urljoin
+from flask import Flask, request
 from exceptions import RestHttpError
 
 
@@ -43,3 +44,19 @@ def flask_res(data=None, code=200):
 
 def rest_abort(code):
     raise RestHttpError(code)
+
+
+def get_bp_prefix(app, bp_name):
+    prefix_pattern = app.config.get('BP_PREFIX_PATTERN', '/{0}/{1}/')
+    default_prefix = prefix_pattern.format(bp_name, app.config['VERSION'])
+    if not app.config.get('BP_PREFIX', None):
+        app.config['BP_PREFIX'] = dict()
+    app.config['BP_PREFIX'].setdefault(bp_name, default_prefix)
+    return app.config['BP_PREFIX'][bp_name]
+
+
+def get_relation_url(table_name, pk, relation_name):
+    from main import app
+    bp_prefix = get_bp_prefix(app, 'rest_db')
+    relation_path = '/'.join((table_name, str(pk), relation_name))
+    return urljoin(urljoin(request.host_url, bp_prefix),  relation_path)

@@ -10,6 +10,7 @@ import urllib
 from copy import copy
 from collections import namedtuple
 from flask import request
+from sqlalchemy.inspection import inspect
 from app.lib.utils import rest_abort
 from app.lib.exceptions import ValidationError
 from app.lib.database import db, get_model_by_tablename, query_result2dict
@@ -33,6 +34,7 @@ class RestQuery(object):
         self.name = name
         self.model = model
         self.columns = self.model.get_column_names()
+        self.relations = inspect(self.model).relationships
         self.default_page_size = self.app.config.get('DEFAULT_PAGE_SIZE', 200)
         self.min_page_size = self.app.config.get('MIN_PAGE_SIZE', 10)
         self.max_page_size = self.app.config.get('MAX_PAGE_SIZE', 1000)
@@ -193,6 +195,18 @@ class RestQuery(object):
             filter_query, paginate['__page'], paginate['__page_size'])
         return paginate_query
 
+    def generate_relation_query(self, filters, processes, paginate, rel_name, pk):
+
+        relation = self.relations[rel_name]
+        relation_model = get_model_by_tablename(relation.table.fullname)
+        show_query = self.get_show_query(relation_model, processes.get('__show', []))
+        rel_query = show_query.filter(getattr(relation_model, relation.back_populates).any(id=pk))
+        filter_query = self.filter_query(relation_model, rel_query, filters)
+        paginate_query = self.paginate_query(
+            filter_query, paginate['__page'], paginate['__page_size'])
+
+        return paginate_query
+
     @staticmethod
     def get_prev_link(params, paginate):
         prev_params = copy(params)
@@ -208,14 +222,13 @@ class RestQuery(object):
         prev_params['__page'] = paginate['__page'] + 1
         return request.base_url + '?' + urllib.urlencode(prev_params)
 
-    def __call__(self, params):
+    def parse_params(self, params):
         processes = dict()
         paginate = dict()
         filters = []
 
         params.setdefault('__page', 1)
         params.setdefault('__page_size', self.default_page_size)
-
         for key, value in params.items():
             if key in self.PROCESSES:
                 processes[key] = self.parse_process(key, value)
@@ -224,7 +237,20 @@ class RestQuery(object):
             else:
                 filters.append(self.parse_filter(key, value))
 
-        query = self.generate_query(filters, processes, paginate)
+        return processes, filters, paginate
+
+    def query(self, params):
+        rel_name = params.pop('__relation', None)
+        pk = params.pop('__pk', None)
+
+        processes, filters, paginate = self.parse_params(params)
+        if rel_name and pk:
+            if rel_name not in self.relations:
+                raise ValidationError(u'{0} is not a relation of {1}'.format(
+                    rel_name, self.name))
+            query = self.generate_relation_query(filters, processes, paginate, rel_name, pk)
+        else:
+            query = self.generate_query(filters, processes, paginate)
         result = [query_result2dict(item) for item in query]
 
         return {
@@ -234,6 +260,9 @@ class RestQuery(object):
             'prev_page': self.get_prev_link(params, paginate),
             'next_page': self.get_next_link(params, paginate)
         }
+
+    def __call__(self, params):
+        return self.query(params)
 
 
 class RestModel(object):
@@ -306,5 +335,9 @@ class RestModel(object):
 
         bp.rest_route(rule=self.name + '/<id>', methods=['DELETE'])(
             self.http_delete, '_'.join((self.name, self.http_delete.__name__)))
+
+        bp.rest_route(rule=self.name + '/<__pk>/<__relation>', methods=['GET'])(
+            self.http_get, '_'.join((self.name, self.http_get.__name__, 'relations'))
+        )
 
         return bp

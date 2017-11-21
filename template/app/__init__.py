@@ -7,11 +7,13 @@
 
 from flask import request, session
 from sqlalchemy.exc import SQLAlchemyError
+
 from app.lib.logger import init_logger
 from app.lib.utils import flask_res
 from app.lib.exceptions import CustomError
 from app.lib.pine_wrapper import PineBlueprint
 from app.lib.rest_model import RestModel
+from app.lib.utils import get_bp_prefix
 
 
 class Init(object):
@@ -64,7 +66,9 @@ class Init(object):
 
         @self._app.errorhandler(SQLAlchemyError)
         def handler_db_error(error):
-            data = {'code': 500, 'msg': u'DB操作失败: {0}'.format(str(error))}
+            msg = u'DB操作失败: {0}'.format(str(error))
+            self._app.logger.exception(msg)
+            data = {'code': 500, 'msg': msg}
             return flask_res(data=data, code=500)
 
     def init_extensions(self):
@@ -89,10 +93,8 @@ class Init(object):
                 self._app.logger.exception(str(e))
 
     def register_bp(self, bp):
-        bp_prefix = self._app.config.get('BP_PREFIX', dict())
-        prefix_pattern = self._app.config.get('BP_PREFIX_PATTERN', '/{0}/{1}/')
-        default_prefix = prefix_pattern.format(bp.name, self._app.config['VERSION'])
-        self._app.register_blueprint(bp, url_prefix=bp_prefix.get(bp.name, default_prefix))
+        bp_prefix = get_bp_prefix(self._app, bp.name)
+        self._app.register_blueprint(bp, url_prefix=bp_prefix)
 
     def init_views(self):
         import views
