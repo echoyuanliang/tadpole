@@ -47,9 +47,14 @@ class RestRoute(object):
     @staticmethod
     def post_process(result):
         if isinstance(result, (Response, Flask.response_class)):
+            # 用户已经封装好返回值
             return result
         else:
-            return flask_res(result)
+            return flask_res({
+                'code': 200,
+                'msg': 'ok',
+                'result': result
+            })
 
     @staticmethod
     def get_http_data():

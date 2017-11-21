@@ -36,9 +36,9 @@ class CustomJsonEncoder(json.JSONEncoder):
             return super(CustomJsonEncoder, self).default(obj)
 
 
-def flask_res(data=None, status=200):
+def flask_res(data=None, code=200):
     data = dict(msg='ok', code=200) if not data else data
-    return Flask.response_class(json.dumps(data, cls=CustomJsonEncoder), status=status, mimetype='application/json')
+    return Flask.response_class(json.dumps(data, cls=CustomJsonEncoder), status=code, mimetype='application/json')
 
 
 def rest_abort(code):

@@ -11,6 +11,8 @@ from app.lib.database import MysqlModel as Model
 
 class User(Model):
 
+    __hide__ = ('password',)
+
     account = Column(db.String(128), nullable=False, default='-', index=True, unique=True)
     name = Column(db.String(32), nullable=False, default='-')
     email = Column(db.Email(128), nullable=False, default='-')

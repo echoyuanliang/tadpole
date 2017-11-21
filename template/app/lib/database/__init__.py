@@ -69,7 +69,8 @@ class Model(SurrogatePK, db.Model, CRUDMixin):
         return [c.name for c in cls.get_columns()]
 
     def _as_dict(self):  # for common sqlalchemy  query result to dict
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns
+                if c.name not in getattr(self, '__hide__', ())}
 
     def to_dict(self):  # for human
         return self._as_dict()
@@ -123,4 +124,3 @@ def include_custom_types(obj):
             setattr(obj, key, getattr(custom_types, key))
 
 include_custom_types(db)
-

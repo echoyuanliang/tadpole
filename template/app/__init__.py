@@ -6,6 +6,7 @@
 """
 
 from flask import request, session
+from sqlalchemy.exc import SQLAlchemyError
 from app.lib.logger import init_logger
 from app.lib.utils import flask_res
 from app.lib.exceptions import CustomError
@@ -59,7 +60,12 @@ class Init(object):
 
         @self._app.errorhandler(CustomError)
         def handler_custom_error(error):
-            return flask_res(data=error, status=error.code)
+            return flask_res(data=error, code=error.code)
+
+        @self._app.errorhandler(SQLAlchemyError)
+        def handler_db_error(error):
+            data = {'code': 500, 'msg': u'DB操作失败: {0}'.format(str(error))}
+            return flask_res(data=data, code=500)
 
     def init_extensions(self):
         from app import extensions
@@ -107,8 +113,8 @@ class Init(object):
         self._app.logger.debug("init rest_db")
         rest_db = PineBlueprint('rest_db', __name__)
 
-        rest_models = [RestModel(self._app, model.__tablename__, model)
-                       for model in get_model_registry()]
+        rest_models = (RestModel(self._app, model.__tablename__, model)
+                       for model in get_model_registry())
 
         for rest_model in rest_models:
             rest_model.init_bp(bp=rest_db)

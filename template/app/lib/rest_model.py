@@ -258,33 +258,37 @@ class RestModel(object):
     def http_get(self, params):
         return self.rest_query(params)
 
-    def http_get_pk(self, _id):
-        item = self.model.get(_id)
+    def http_get_pk(self, params):
+        item = self.model.get(params['id'])
         return item.to_dict() if item else rest_abort(404)
 
     def http_post(self, data):
+        if data.pop('id', None):
+            raise ValidationError(u"id can't be specified when post")
+
         self.validate_keys(data.keys())
         item = self.model(**data)
         return item.save().to_dict()
 
-    def http_delete(self, _id):
+    def http_delete(self, params):
         # if the item need to delete not exists,
         # return empty dict, else return the item dict
 
-        item = self.model.get(_id)
+        item = self.model.get(params['id'])
         res = dict()
         if item:
             res = item.to_dict()
             item.delete()
         return res
 
-    def http_put(self, _id, data):
+    def http_put(self, data):
+        _id = data.pop('id')
         self.validate_keys(data.keys())
 
         if not self.model.get(_id):
             raise ValidationError(u'id {0} of {1} not exists'.format(_id, self.name))
 
-        self.model.query_update(query={'id', _id}, data=data)
+        self.model.query_update(query={'id': _id}, data=data)
         return self.model.get(_id).to_dict()
 
     def init_bp(self, bp):
@@ -296,6 +300,9 @@ class RestModel(object):
 
         bp.rest_route(rule=self.name + '/<id>', methods=['PUT'])(
             self.http_put, '_'.join((self.name, self.http_put.__name__)))
+
+        bp.rest_route(rule=self.name, methods=['POST'])(
+            self.http_post, '_'.join((self.name, self.http_post.__name__)))
 
         bp.rest_route(rule=self.name + '/<id>', methods=['DELETE'])(
             self.http_delete, '_'.join((self.name, self.http_delete.__name__)))

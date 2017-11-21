@@ -66,10 +66,6 @@ def is_case_insensitive(mixed):
 
 
 class CaseInsensitiveComparator(sa.Unicode.Comparator):
-
-    def __init__(self):
-        super(CaseInsensitiveComparator, self).__init__()
-
     @classmethod
     def lowercase_arg(cls, func):
         def operation(self, other, **kwargs):
