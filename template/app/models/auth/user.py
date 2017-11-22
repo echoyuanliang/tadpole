@@ -18,3 +18,6 @@ class User(Model):
     email = Column(db.Email(128), nullable=False, default='-')
     password = Column(db.Password(schemes=['pbkdf2_sha512', 'md5_crypt'],
                                   deprecated=['md5_crypt']), nullable=False, default='-')
+
+    def validate_password(self, password):
+        return self.password == password

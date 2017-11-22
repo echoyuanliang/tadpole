@@ -6,8 +6,9 @@
 """
 
 import json
-import datetime
 import decimal
+from datetime import datetime, date
+from collections import Mapping, Iterable
 from urlparse import urljoin
 from flask import Flask, request
 from exceptions import RestHttpError
@@ -15,26 +16,23 @@ from exceptions import RestHttpError
 
 class CustomJsonEncoder(json.JSONEncoder):
 
-    DATE_FMT = "%Y-%m-%d"
     DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
     def default(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return obj.strftime(self.DATE_FMT)
-        elif isinstance(obj, datetime.date):
+        if isinstance(obj, (datetime, date)):
             return obj.strftime(self.DATETIME_FMT)
         elif isinstance(obj, decimal.Decimal):
             return float(obj)
-        elif callable(getattr(obj, '_as_dict', None)):  # for namedtuple, sqlalchemy result
-            return getattr(obj, '_as_dict')()
-        elif callable(getattr(obj, 'to_dict', None)):
-            return getattr(obj, 'to_dict')()
-        elif isinstance(obj, dict):  # for OrderedDict ,defaultdict
+        elif isinstance(obj, Mapping):
             return dict(obj)
-        elif isinstance(obj, (set, tuple)):
+        elif isinstance(obj, Iterable):
             return list(obj)
-        else:
-            return super(CustomJsonEncoder, self).default(obj)
+
+        to_dict = getattr(obj, '_as_dict', None) or getattr(obj, 'to_dict', None)
+        if to_dict and callable(to_dict):
+            return to_dict()
+
+        return super(CustomJsonEncoder, self).default(obj)
 
 
 def flask_res(data=None, code=200):

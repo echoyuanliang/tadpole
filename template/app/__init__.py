@@ -14,12 +14,14 @@ from app.lib.exceptions import CustomError
 from app.lib.pine_wrapper import PineBlueprint
 from app.lib.rest_model import RestModel
 from app.lib.utils import get_bp_prefix
+from app.lib.auth import PermissionAuth
 
 
 class Init(object):
     def __init__(self, app, bp_list=None):
         self._app = app
         self._bp_list = bp_list or []
+        self.permission_auth_handler = PermissionAuth()
 
     def __call__(self, *args, **kwargs):
         self.init_config()
@@ -48,6 +50,7 @@ class Init(object):
         def before_request():
             ip_list = request.headers.getlist("X-Forwarded-For")
             session['remote_address'] = ip_list[0].split(',')[0] if ip_list else request.remote_addr
+            self.permission_auth_handler.validate_request_permission()
 
     def init_after(self):
         self._app.logger.debug('init after_request')

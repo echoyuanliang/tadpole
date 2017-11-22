@@ -43,12 +43,25 @@ class SupportError(InternalError):
         self.code = 500
 
 
+class AuthError(CustomError):
+
+    def __init__(self, msg):
+        super(AuthError, self).__init__(msg)
+        self.code = 401
+
+
+class PermissionError(CustomError):
+    def __init__(self, msg):
+        super(PermissionError, self).__init__(msg)
+        self.code = 403
+
+
 class RestHttpError(CustomError):
 
     _code_map = {
         400: 'bad request, please check your params ',
-        401: 'unauthorized, you has not permission access this resource',
-        403: 'forbidden, please check your token or password',
+        401: 'authenticate failed, please check your token or password',
+        403: 'permission denied, you has not permission access this resource',
         404: 'resource not found, please check your url',
         500: 'sorry, internal error happened',
         405: 'request method not allowed'
