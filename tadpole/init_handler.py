@@ -13,8 +13,8 @@ import time
 from copy import deepcopy
 from subprocess import check_output
 
-from pine import config
-from pine import logger
+from tadpole import config
+from tadpole import logger
 
 
 class _PyConfigMixin(object):

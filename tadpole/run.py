@@ -8,9 +8,9 @@
 from logging import DEBUG
 import click
 
-import pine.logger as logger
-from pine.config import TEMPLATE_PROJECT
-from pine.init_handler import do_init
+import tadpole.logger as logger
+from tadpole.config import TEMPLATE_PROJECT
+from tadpole.init_handler import do_init
 
 VERSION = "0.1.1"
 

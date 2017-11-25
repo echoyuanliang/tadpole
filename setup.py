@@ -10,17 +10,17 @@ from setuptools import setup, find_packages
 
 """
 ==================
-pine
+tadpole
 ==================
 
-# pine
+# tadpole
 flask starter, provide simple flask app start and management,
  integration with some useful flask extensions and frequently used python packages
 
 """
 
 
-NAME = "pine"
+NAME = "tadpole"
 __version__ = '1.0.0'
 __author__ = "allen"
 __license__ = "MIT"
@@ -34,7 +34,7 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
-extra_files = package_files('pine/template/')
+extra_files = package_files('tadpole/template/')
 
 setup(
     name=NAME,
@@ -44,8 +44,8 @@ setup(
     author_email='echoyuanliang@gmail.com',
     description=__doc__,
     long_description=__doc__,
-    url='https://github.com/echoyuanliang/pine',
-    download_url='https://github.com/echoyuanliang/pine.git',
+    url='https://github.com/echoyuanliang/tadpole',
+    download_url='https://github.com/echoyuanliang/tadpole.git',
     install_requires=[
         "click==6.7",
         "termcolor==1.1.0"
@@ -66,6 +66,6 @@ setup(
     ],
     entry_points="""
     [console_scripts]
-    pine=pine.run:cli
+    tadpole=tadpole.run:cli
     """
 )
