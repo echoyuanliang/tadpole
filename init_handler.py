@@ -42,7 +42,6 @@ class _PyConfigMixin(object):
 
     @staticmethod
     def process_key_value(key, value):
-        print(type(value), value)
         if isinstance(value, unicode):
             return u"{key} = u'{value}'\n".format(key=key, value=value)
         if isinstance(value, basestring):
@@ -167,19 +166,16 @@ class _InitHandler(_PyConfigMixin):
         with codecs.open(config.TEMPLATE_GUN_CONF, "w", "utf-8") as gfp:
             gfp.write(config_content)
 
-    def _init_manager(self):
-        logger.debug("make project manager {0}".format(self.project_name))
+    def _process_template(self):
+        with codecs.open("template.py", "r", "utf-8") as tfp:
+            content = tfp.read()
 
-        with open("init.sh", "r") as ifp:
-            init_content = ifp.read()
+        with codecs.open(self.project_name, "w", "utf-8") as pfp:
+            content = content.replace("{{template}}", self.project_name)
+            pfp.write(content)
 
-        init_target = init_content.replace("pine", self.project_name, 1)
-
-        with open(self.project_name, "w") as mfp:
-            mfp.write(init_target)
-
-        os.chmod(self.project_name, 0744)
-        os.remove("init.sh")
+        os.chmod(self.project_name, 0740)
+        os.remove("template.py")
 
     def _init_projects(self):
         logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
@@ -187,7 +183,7 @@ class _InitHandler(_PyConfigMixin):
         os.chdir(self.work_dir)
         self._make_dirs()
         self._init_config()
-        self._init_manager()
+        self._process_template()
 
     def __call__(self, *args, **kwargs):
         self._init_projects()

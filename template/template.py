@@ -13,7 +13,7 @@ import time
 import signal
 from subprocess import check_output, CalledProcessError
 
-SERVICE_NAME = "template"
+SERVICE_NAME = "{{template}}"
 WORK_DIR = os.path.curdir
 DEBUG = False
 GUN_CONF = "gun.py"
