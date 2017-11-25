@@ -32,4 +32,4 @@ License
 tadpole is released under the MIT License. See the LICENSE_ file for more
 details.
 
-.. _LICENSE: http://github.com/benoitc/gunicorn/blob/master/LICENSE
+.. _LICENSE: https://github.com/echoyuanliang/tadpole/blob/master/LICENSE
