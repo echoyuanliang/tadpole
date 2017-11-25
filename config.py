@@ -96,7 +96,7 @@ TEMPLATE_INSTANCE = {
 
 # gunicorn config, render to gun.py
 TEMPLATE_GUNICORN = {
-    "__KEYS_ORDER": ['bind', 'workers', 'worker_class', 'backlog', 'daemon',
+    "__KEYS_ORDER": ['bind', 'workers', 'worker_class', 'backlog', 'daemon', 'pidfile',
                      'loglevel', 'accesslog', 'errorlog', 'access_log_format'],
 
     "bind": "0.0.0.0:8080",
