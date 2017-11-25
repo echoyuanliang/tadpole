@@ -84,3 +84,4 @@ ENV/
 .spyderproject
 .ropeproject
 data/
+.pypirc
