@@ -9,7 +9,7 @@ used python packages.
 Installation
 ------------
 
-Tadpole requires **Python 2.7 >= 2.6**.
+Tadpole requires **Python 2.x >= 2.6**.
 
 Install from PyPI::
 
