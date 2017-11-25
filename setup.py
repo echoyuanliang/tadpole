@@ -36,8 +36,6 @@ def package_files(directory):
 
 extra_files = package_files('pine/template/')
 
-print(extra_files)
-
 setup(
     name=NAME,
     version=__version__,
