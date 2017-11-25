@@ -1,5 +1,5 @@
 Tadpole
---------
+-------
 
 flask starter, provide simple flask app start and management,
 integration with some useful flask extensions and frequently
@@ -29,5 +29,7 @@ Where ``APP_NAME`` is your own project name and ``APP_VERSION`` is your project 
 License
 -------
 
-tadpole is released under the MIT License
+tadpole is released under the MIT License. See the LICENSE_ file for more
+details.
 
+.. _LICENSE: http://github.com/benoitc/gunicorn/blob/master/LICENSE
