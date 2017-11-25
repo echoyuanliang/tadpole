@@ -7,10 +7,10 @@
 
 from logging import DEBUG
 import click
-import logger
 
-from config import TEMPLATE_PROJECT
-from init_handler import do_init
+import pine.logger as logger
+from pine.config import TEMPLATE_PROJECT
+from pine.init_handler import do_init
 
 VERSION = "0.1.1"
 

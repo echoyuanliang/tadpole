@@ -5,11 +5,12 @@
     create at 2017/11/7 by allen
 """
 
-
 from datetime import datetime
-from sqlalchemy import inspect
+
 from app.extensions.sqlalchemy import extension as db
 from app.lib.utils import get_relation_url
+from sqlalchemy import inspect
+
 import custom_types
 
 Column = db.Column

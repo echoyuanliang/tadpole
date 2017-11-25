@@ -8,10 +8,9 @@
 from flask_script import Manager, Server, Shell
 from flask_script.commands import ShowUrls, Clean
 
-from main import app
-from app.lib.database import db
 from app import models
-
+from app.lib.database import db
+from main import app
 
 manager = Manager(app)
 

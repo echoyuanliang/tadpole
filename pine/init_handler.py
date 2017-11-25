@@ -5,15 +5,16 @@
     create at 2017/11/2 by allen
 """
 
-import os
-import json
 import codecs
+import json
+import os
 import shutil
 import time
 from copy import deepcopy
 from subprocess import check_output
-import logger
-import config
+
+from pine import config
+from pine import logger
 
 
 class _PyConfigMixin(object):
