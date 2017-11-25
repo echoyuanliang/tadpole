@@ -9,8 +9,9 @@ import os
 import json
 import codecs
 import shutil
+import time
 from copy import deepcopy
-
+from subprocess import check_output
 import logger
 import config
 
@@ -167,6 +168,7 @@ class _InitHandler(_PyConfigMixin):
             gfp.write(config_content)
 
     def _process_template(self):
+        logger.debug("gen %s file for start, stop ... actions" % self.project_name)
         with codecs.open("template.py", "r", "utf-8") as tfp:
             content = tfp.read()
 
@@ -177,13 +179,38 @@ class _InitHandler(_PyConfigMixin):
         os.chmod(self.project_name, 0740)
         os.remove("template.py")
 
+    @staticmethod
+    def _init_venv():
+        logger.debug("make venv")
+        out = check_output("virtualenv --no-site-packages venv", shell=True)
+        logger.debug(out)
+        out = check_output("source venv/bin/activate && pip install -r requirements.txt",
+                           shell=True)
+        logger.debug(out)
+        return True
+
+    def _init_git(self):
+        logger.debug("init git")
+        try:
+            out = check_output("git init && git add . && git commit -m 'init {0}'".
+                               format(self.project_name), shell=True)
+            logger.debug(out)
+        except Exception as e:
+            logger.debug(str(e))
+            logger.info("git not found, git init ignore")
+
     def _init_projects(self):
+        time_start = time.time()
+        logger.info("init project {0}".format(self.project_name))
         logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
         shutil.copytree(self.template_dir, self.work_dir)
         os.chdir(self.work_dir)
         self._make_dirs()
         self._init_config()
         self._process_template()
+        self._init_venv()
+        self._init_git()
+        logger.info("init project success using %.3f seconds !!!" % (time.time() - time_start))
 
     def __call__(self, *args, **kwargs):
         self._init_projects()
@@ -195,5 +222,4 @@ def do_init(project_name, version, owner, email):
 
 # for test
 if __name__ == '__main__':
-    import time
     do_init('data/test{0}'.format(int(time.time())), 'v0.1.1', 'pine', '')

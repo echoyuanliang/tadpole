@@ -6,7 +6,6 @@
 """
 
 from logging import DEBUG
-
 import click
 import logger
 
@@ -35,8 +34,6 @@ def open_debug(ctx, param, value):
               expose_value=False, is_eager=True)
 def cli():
     pass
-
-# TODO: some config in TEMPLATE_PROJECT maybe deleted
 
 
 @cli.command()

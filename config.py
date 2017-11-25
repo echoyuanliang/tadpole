@@ -105,6 +105,7 @@ TEMPLATE_GUNICORN = {
     "backlog": 2048,
     "daemon": True,
     "loglevel": "info",
+    "pidfile": "data/gun.pid",
     "accesslog": 'logs/access.log',
     "errorlog": 'logs/error.log',
     "access_log_format": "%({X-Real-IP}i)s %(h)s %(l)s %(u)s %(t)s %(r)s %(s)s %(b)s %(f)s %(a)s"
