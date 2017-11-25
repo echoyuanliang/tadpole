@@ -6,7 +6,7 @@
 """
 
 import logging
-from logging import StreamHandler, DEBUG, INFO
+from logging import StreamHandler, INFO
 from termcolor import colored
 
 
