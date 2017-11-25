@@ -8,16 +8,8 @@
 import os
 from setuptools import setup, find_packages
 
-"""
-==================
-tadpole
-==================
-
-# tadpole
-flask starter, provide simple flask app start and management,
- integration with some useful flask extensions and frequently used python packages
-
-"""
+with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
+    long_description = f.read()
 
 
 NAME = "tadpole"
@@ -43,7 +35,7 @@ setup(
     author=__author__,
     author_email='echoyuanliang@gmail.com',
     description=__doc__,
-    long_description=__doc__,
+    long_description=long_description,
     url='https://github.com/echoyuanliang/tadpole',
     download_url='https://github.com/echoyuanliang/tadpole.git',
     install_requires=[
