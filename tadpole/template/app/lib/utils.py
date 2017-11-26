@@ -45,8 +45,8 @@ def rest_abort(code):
 
 
 def get_bp_prefix(app, bp_name):
-    prefix_pattern = app.config.get('BP_PREFIX_PATTERN', '/{0}/{1}/')
-    default_prefix = prefix_pattern.format(bp_name, app.config['VERSION'])
+    prefix_pattern = app.config.get('BP_PREFIX_PATTERN', '/api/{0}/{1}/')
+    default_prefix = prefix_pattern.format(app.config['VERSION'], bp_name)
     if not app.config.get('BP_PREFIX', None):
         app.config['BP_PREFIX'] = dict()
     app.config['BP_PREFIX'].setdefault(bp_name, default_prefix)
