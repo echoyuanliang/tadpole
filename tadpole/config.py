@@ -23,7 +23,7 @@ TEMPLATE_LOG_FORMAT = '%(hostname)s %(asctime)s %(levelname)s [%(filename)s:%(li
 
 TEMPLATE_PROJECT = {
     '__KEYS_ORDER': ['APP_NAME', 'VERSION', 'OWNER', 'EMAIL', 'DEBUG', '\n',
-                     'LOG_FORMATTER', 'LOGGERS'],
+                     'LOG_FORMATTER', 'LOGGERS', 'REST_DB', 'SQLALCHEMY_TRACK_MODIFICATIONS'],
 
     'VERSION': "v0.0.1",
     'OWNER': "pine",
