@@ -168,7 +168,7 @@ class _InitHandler(_PyConfigMixin):
         with codecs.open(config.TEMPLATE_GUN_CONF, "w", "utf-8") as gfp:
             gfp.write(config_content)
 
-    def _process_template(self):
+    def _init_template(self):
         logger.debug("gen %s file for start, stop ... actions" % self.project_name)
         with codecs.open("template.py", "r", "utf-8") as tfp:
             content = tfp.read()
@@ -200,6 +200,12 @@ class _InitHandler(_PyConfigMixin):
             logger.debug(str(e))
             logger.info("git not found, git init ignore")
 
+    @staticmethod
+    def _init_dev():
+        os.rename("dev.py", "dev")
+        os.chmod("dev", 0755)
+        return True
+
     def _init_projects(self):
         time_start = time.time()
         logger.info("init project {0}".format(self.project_name))
@@ -208,7 +214,8 @@ class _InitHandler(_PyConfigMixin):
         os.chdir(self.work_dir)
         self._make_dirs()
         self._init_config()
-        self._process_template()
+        self._init_template()
+        self._init_dev()
         self._init_git()
         self._init_venv()
         logger.info("init project success using %.3f seconds !!!" % (time.time() - time_start))
