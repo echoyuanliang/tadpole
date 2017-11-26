@@ -1,11 +1,11 @@
-#!venv/bin/python
+#!/venv/bin/python
 # coding: utf-8
 
 """
     create at 2017/11/4 by allen
 """
 
-from flask_script import Manager, Server, Shell
+from flask_script import Manager, Shell
 from flask_script.commands import ShowUrls, Clean
 
 from app import models

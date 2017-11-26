@@ -141,8 +141,8 @@ class PermissionAuth(object):
         return any(role.name == 'root' for role in roles)
 
     def validate_request_permission(self):
-        path_resources = self.auth_info_loader.load_resources(
-            ResourceType.HTTP, request.path, request.method.upper())
+        path_resources = list(self.auth_info_loader.load_resources(
+            ResourceType.HTTP, request.path, request.method.upper()))
         if not path_resources:
             return True
         user = self.auth_handler(request.authorization)
