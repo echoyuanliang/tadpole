@@ -12,7 +12,7 @@ import tadpole.logger as logger
 from tadpole.config import TEMPLATE_PROJECT
 from tadpole.init_handler import do_init
 
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 
 
 def print_version(ctx, param, value):
