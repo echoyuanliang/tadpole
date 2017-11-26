@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 # chkconfig: - 30 74
 # description:  This is a daemon which handles app
 
