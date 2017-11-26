@@ -21,9 +21,11 @@ Usage
 
 Basic usage::
 
-    $ tadpole init -n APP_NAME -v APP_VERSION
+    $ tadpole init -n PROJECT_NAME -v PROJECT_VERSION -o PROJECT_OWNER -e PROJECT_EMAIL
 
-Where ``APP_NAME`` is your own project name and ``APP_VERSION`` is your project init version
+Where ``PROJECT_NAME`` is your own project name and ``PROJECT_VERSION`` is your project init version,
+``PROJECT_OWNER`` is the project owner name and ``PROJECT_EMAIL`` is email address of this project
+（the logging email maybe sendto this address).
 
 License
 -------
