@@ -12,7 +12,7 @@ from base64 import b64encode
 VERSION = "1.0.5"
 
 TEMPLATE_SRC = 'template/'
-TEMPLATE_HEADER = "# !/usr/bin/python\n# coding: utf-8\n"
+TEMPLATE_HEADER = "#!/usr/bin/env python\n# coding: utf-8\n"
 TEMPLATE_DIRS_CREATE = ('data/', 'logs/', 'instance/')
 TEMPLATE_CONF_NAME = "config.py"
 TEMPLATE_GUN_CONF = "gun.py"
