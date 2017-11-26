@@ -185,7 +185,7 @@ class _InitHandler(_PyConfigMixin):
         logger.debug("make venv")
         out = check_output("virtualenv --no-site-packages venv", shell=True)
         logger.debug(out)
-        out = check_output("source venv/bin/activate && pip install -r requirements.txt",
+        out = check_output("venv/bin/pip install -r requirements.txt",
                            shell=True)
         logger.debug(out)
         return True
