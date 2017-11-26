@@ -206,6 +206,10 @@ class _InitHandler(_PyConfigMixin):
         os.chmod("dev", 0755)
         return True
 
+    @staticmethod
+    def _init_db():
+        os.rename("app.db", "data/app.db")
+
     def _init_projects(self):
         time_start = time.time()
         logger.info("init project {0}".format(self.project_name))
@@ -216,6 +220,7 @@ class _InitHandler(_PyConfigMixin):
         self._init_config()
         self._init_template()
         self._init_dev()
+        self._init_db()
         self._init_git()
         self._init_venv()
         logger.info("init project success using %.3f seconds !!!" % (time.time() - time_start))
