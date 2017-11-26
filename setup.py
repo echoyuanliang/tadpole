@@ -13,7 +13,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
 
 
 NAME = "tadpole"
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __author__ = "allen"
 __license__ = "MIT"
 __copyright__ = "2017 - allen"
