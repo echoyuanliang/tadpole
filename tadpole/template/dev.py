@@ -25,10 +25,6 @@ def create_db():
 
 manager.add_command('url', ShowUrls())
 manager.add_command('clean', Clean())
-manager.add_command('server', Server(host=app.config.get('HOST', '0.0.0.0'),
-                                     port=app.config.get('PORT', 8080)))
-manager.add_command('dev', Server(host=app.config.get('HOST', '127.0.0.1'),
-                                  port=app.config.get('PORT', 5000), use_debugger=True))
 manager.add_command("shell", Shell(make_context=_make_context))
 
 
