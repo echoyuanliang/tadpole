@@ -7,7 +7,8 @@
 
 import os
 from setuptools import setup, find_packages
-from tadpole.run import VERSION
+
+from  tadpole.config import  VERSION
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     long_description = f.read()
 
