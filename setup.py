@@ -7,13 +7,13 @@
 
 import os
 from setuptools import setup, find_packages
-
+from tadpole.run import VERSION
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     long_description = f.read()
 
 
 NAME = "tadpole"
-__version__ = '1.0.2'
+__version__ = VERSION
 __author__ = "allen"
 __license__ = "MIT"
 __copyright__ = "2017 - allen"
