@@ -6,9 +6,10 @@
 """
 
 import os
+import codecs
 from setuptools import setup, find_packages
 
-from  tadpole.config import  VERSION
+from tadpole.config import VERSION
 with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     long_description = f.read()
 
@@ -27,7 +28,14 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
+
+def required_packages():
+    with codecs.open("requirements.txt", "r") as pfp:
+        return pfp.readlines()
+
+
 extra_files = package_files('tadpole/template/')
+depend_packages = list(required_packages())
 
 setup(
     name=NAME,
@@ -39,10 +47,7 @@ setup(
     long_description=long_description,
     url='https://github.com/echoyuanliang/tadpole',
     download_url='https://github.com/echoyuanliang/tadpole.git',
-    install_requires=[
-        "click==6.7",
-        "termcolor==1.1.0"
-    ],
+    install_requires=depend_packages,
     packages=find_packages(),
     package_data={'': extra_files},
     keywords=['flask', 'restful', 'orm', 'sqlalchemy', 'auth', 'permission'],
