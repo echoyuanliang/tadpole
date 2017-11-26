@@ -209,8 +209,8 @@ class _InitHandler(_PyConfigMixin):
         self._make_dirs()
         self._init_config()
         self._process_template()
-        self._init_venv()
         self._init_git()
+        self._init_venv()
         logger.info("init project success using %.3f seconds !!!" % (time.time() - time_start))
 
     def __call__(self, *args, **kwargs):
