@@ -208,7 +208,7 @@ class _InitHandler(_PyConfigMixin):
 
     @staticmethod
     def _init_db():
-        os.rename("app.db", "data/app.db")
+        shutil.move("app.db", "data/app.db")
 
     def _init_projects(self):
         time_start = time.time()
