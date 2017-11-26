@@ -34,7 +34,7 @@ setup(
     license=__license__,
     author=__author__,
     author_email='echoyuanliang@gmail.com',
-    description=__doc__,
+    description="flask starter",
     long_description=long_description,
     url='https://github.com/echoyuanliang/tadpole',
     download_url='https://github.com/echoyuanliang/tadpole.git',
