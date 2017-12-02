@@ -215,6 +215,10 @@ class _InitHandler(_PyConfigMixin):
         return True
 
     @staticmethod
+    def _clean_project():
+        check_output("./dev clean", shell=True)
+
+    @staticmethod
     def _init_db():
         shutil.move("app.db", "data/app.db")
 
@@ -234,6 +238,7 @@ class _InitHandler(_PyConfigMixin):
         self._init_db()
         self._init_git()
         self._init_venv()
+        self._clean_project()
         logger.info(
             "init project success using %.3f seconds !!!" %
             (time.time() - time_start))
