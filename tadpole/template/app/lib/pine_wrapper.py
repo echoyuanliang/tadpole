@@ -28,4 +28,3 @@ class PineBlueprint(Blueprint):
 
         super(PineBlueprint, self).__init__(*args, **kwargs)
         self.rest_route = partial(rest_route, self)
-
