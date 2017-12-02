@@ -3,8 +3,8 @@ Tadpole
 
 flask starter, provide simple flask app start and management,
 integration with some useful flask extensions and frequently
-used python packages,support restful view , auto restful sqlalchemy
-model, auth and permission.
+used python packages,support restful view, auto restful
+sqlalchemy model, auth and permission.
 
 
 Installation
