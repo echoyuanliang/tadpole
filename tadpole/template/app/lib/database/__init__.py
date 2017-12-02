@@ -142,5 +142,5 @@ def include_custom_types(obj):
         if not hasattr(obj, key):
             setattr(obj, key, getattr(custom_types, key))
 
-include_custom_types(db)
 
+include_custom_types(db)

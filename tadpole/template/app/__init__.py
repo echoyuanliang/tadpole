@@ -49,7 +49,8 @@ class Init(object):
         @self._app.before_request
         def before_request():
             ip_list = request.headers.getlist("X-Forwarded-For")
-            session['remote_address'] = ip_list[0].split(',')[0] if ip_list else request.remote_addr
+            session['remote_address'] = ip_list[0].split(
+                ',')[0] if ip_list else request.remote_addr
             self.permission_auth_handler.validate_request_permission()
 
     def init_after(self):
@@ -77,19 +78,26 @@ class Init(object):
     def init_extensions(self):
         from app import extensions
         self._app.logger.debug("init extensions")
-        module_priority_chain = getattr(extensions, 'module_priority_chain', [])
+        module_priority_chain = getattr(
+            extensions, 'module_priority_chain', [])
 
         for name in module_priority_chain:
             try:
-                _module = __import__('{0}.{1}'.format(extensions.__name__, name), fromlist=[''])
+                _module = __import__(
+                    '{0}.{1}'.format(
+                        extensions.__name__,
+                        name),
+                    fromlist=[''])
                 if hasattr(_module, 'init_app'):
                     init_fn = getattr(_module, 'init_app', None)
                 elif hasattr(_module, 'extension'):
                     init_fn = getattr(_module.extension, 'init_app', None)
                 if not init_fn:
-                    raise Exception(u'init_app of {0} is not defined'.format(name))
+                    raise Exception(
+                        u'init_app of {0} is not defined'.format(name))
                 elif not callable(init_fn):
-                    raise Exception(u'init_app of {0} is not callable'.format(name))
+                    raise Exception(
+                        u'init_app of {0} is not callable'.format(name))
 
                 init_fn(self._app)
             except ImportError as e:

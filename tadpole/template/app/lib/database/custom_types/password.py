@@ -125,7 +125,8 @@ class PasswordType(types.TypeDecorator, ConversionBase):
         else:
             value.context = weakref.proxy(self.context)
             if value.secret:
-                value.hash = value.context.encrypt(value.secret).encode("utf-8")
+                value.hash = value.context.encrypt(
+                    value.secret).encode("utf-8")
                 value.secret = None
 
             return value

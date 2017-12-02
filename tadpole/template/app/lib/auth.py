@@ -113,6 +113,7 @@ class AuthDbLoader(AuthLoaderBase):
     def load_user_roles(user_id):
         return Role.query.join(user_role).filter(user_id=user_id)
 
+
 _auth_db_loader = AuthDbLoader()
 
 _http_basic_auth = HttpBasicAuth(user_loader=_auth_db_loader.load_user)
@@ -158,4 +159,4 @@ class PermissionAuth(object):
         if not self.validate_user_permission(user, path_resources):
             raise PermissionError(u'permission denied, your  have not'
                                   u' permission to do {0} on {1}'.format(
-                                    request.path, request.method.upper()))
+                                      request.path, request.method.upper()))

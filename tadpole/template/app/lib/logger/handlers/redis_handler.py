@@ -30,7 +30,8 @@ class RedisHandler(Handler):
         if conn_pool:
             self.conn_pool = conn_pool
         else:
-            self.conn_pool = ConnectionPool(host=self.host, port=self.port, db=self.db)
+            self.conn_pool = ConnectionPool(
+                host=self.host, port=self.port, db=self.db)
 
         self.redis = StrictRedis(connection_pool=self.conn_pool)
 

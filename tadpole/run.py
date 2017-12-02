@@ -38,9 +38,12 @@ def cli():
 @click.option('-d', '--debug', is_flag=True, callback=open_debug,
               expose_value=False, is_eager=True)
 @click.option('-n', '--name', prompt=True, help="project name")
-@click.option('-v', '--version', default=TEMPLATE_PROJECT['VERSION'], help="project version")
-@click.option('-o', '--owner', default=TEMPLATE_PROJECT['OWNER'], help="project owner")
-@click.option('-e', '--email', default=TEMPLATE_PROJECT['EMAIL'], help="project email")
+@click.option('-v', '--version',
+              default=TEMPLATE_PROJECT['VERSION'], help="project version")
+@click.option('-o', '--owner',
+              default=TEMPLATE_PROJECT['OWNER'], help="project owner")
+@click.option('-e', '--email',
+              default=TEMPLATE_PROJECT['EMAIL'], help="project email")
 def init(name, version, owner, email):
     logger.debug("raw input project name: {0}, version {1}, owner: {2}, email: {3}".format(
         name, version, owner, email

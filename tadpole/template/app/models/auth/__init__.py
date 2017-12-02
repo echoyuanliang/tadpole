@@ -10,4 +10,3 @@ from relation import user_role, role_resource
 from role import Role
 from user import User
 from resource import Resource
-

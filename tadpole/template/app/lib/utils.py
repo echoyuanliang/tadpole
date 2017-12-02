@@ -28,7 +28,13 @@ class CustomJsonEncoder(json.JSONEncoder):
         elif isinstance(obj, Iterable):
             return list(obj)
 
-        to_dict = getattr(obj, '_as_dict', None) or getattr(obj, 'to_dict', None)
+        to_dict = getattr(
+            obj,
+            '_as_dict',
+            None) or getattr(
+            obj,
+            'to_dict',
+            None)
         if to_dict and callable(to_dict):
             return to_dict()
 
@@ -37,7 +43,8 @@ class CustomJsonEncoder(json.JSONEncoder):
 
 def flask_res(data=None, code=200):
     data = dict(msg='ok', code=200) if not data else data
-    return Flask.response_class(json.dumps(data, cls=CustomJsonEncoder), status=code, mimetype='application/json')
+    return Flask.response_class(json.dumps(
+        data, cls=CustomJsonEncoder), status=code, mimetype='application/json')
 
 
 def rest_abort(code):
@@ -57,4 +64,4 @@ def get_relation_url(table_name, pk, relation_name):
     from main import app
     bp_prefix = get_bp_prefix(app, 'rest_db')
     relation_path = '/'.join((table_name, str(pk), relation_name))
-    return urljoin(urljoin(request.host_url, bp_prefix),  relation_path)
+    return urljoin(urljoin(request.host_url, bp_prefix), relation_path)

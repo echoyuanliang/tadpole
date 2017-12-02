@@ -25,7 +25,8 @@ class RestRoute(object):
     def __call__(self, view_function, endpoint=None):
         view_endpoint = endpoint or view_function.__name__
 
-        @self.bp.route(rule=self.rule, methods=self.methods, endpoint=view_endpoint)
+        @self.bp.route(rule=self.rule, methods=self.methods,
+                       endpoint=view_endpoint)
         @wraps(view_function)
         def wrapped(**kwargs):
             data = deepcopy(kwargs)

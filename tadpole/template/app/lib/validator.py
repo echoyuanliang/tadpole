@@ -19,7 +19,8 @@ class Validator(object):
             ('nonempty', self.process_nonempty),
             ('types', self.process_types),
             ('oneof', self.process_oneof),
-            ('unique', self.process_unique),  # can only do unique for list of hashable objects
+            # can only do unique for list of hashable objects
+            ('unique', self.process_unique),
             ('length', self.process_length),
             ('override', self.process_override),
             ('default', self.process_default),
@@ -30,7 +31,9 @@ class Validator(object):
         required = self.validator['required']
         not_supply = frozenset(required) - frozenset(data.keys())
         if not_supply:
-            raise ValidationError(u'param %s is required' % u','.join(not_supply))
+            raise ValidationError(
+                u'param %s is required' %
+                u','.join(not_supply))
 
         return True
 
@@ -38,7 +41,8 @@ class Validator(object):
         no_empty = self.validator['nonempty']
         for k in no_empty:
             if not data.get(k, None):
-                raise ValidationError(u'param {0} required not empty'.format(k))
+                raise ValidationError(
+                    u'param {0} required not empty'.format(k))
 
         return True
 
@@ -96,7 +100,8 @@ class Validator(object):
                     current_app.logger.exception(u'process override with key={0}, value={1}, error: {2}'.format(
                         key, data[key], str(e)))
 
-                    raise InternalError(u'oops, validate param occurs internal error')
+                    raise InternalError(
+                        u'oops, validate param occurs internal error')
 
         return True
 

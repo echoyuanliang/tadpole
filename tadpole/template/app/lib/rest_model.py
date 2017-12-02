@@ -39,7 +39,8 @@ class RestQuery(object):
         self.min_page_size = self.app.config.get('MIN_PAGE_SIZE', 10)
         self.max_page_size = self.app.config.get('MAX_PAGE_SIZE', 1000)
         self.value_separator = self.app.config.get('ITEM_SEPARATOR', ',')
-        self.operator_separator = self.app.config.get('OPERATOR_SEPARATOR', '.')
+        self.operator_separator = self.app.config.get(
+            'OPERATOR_SEPARATOR', '.')
         self.default_order = self.app.config.get('DEFAULT_ORDER', 'desc')
         self.suffix_like = self.app.config.get('SUFFIX_LIKE', True)
 
@@ -88,7 +89,7 @@ class RestQuery(object):
             if invalid_item:
                 raise ValidationError(u'{0} of your __show columns {1} is not'
                                       u' an attribute of {2}  '.format(
-                                       u','.join(invalid_item), value, self.name))
+                                          u','.join(invalid_item), value, self.name))
 
             return values
         elif key == '__order':
@@ -102,7 +103,7 @@ class RestQuery(object):
                 if attr not in self.columns:
                     raise ValidationError(u'{0}  of your __order_by columns '
                                           u'is not an attribute of {1}'.format(
-                                           attr, value, self.name))
+                                              attr, value, self.name))
 
                 order_by_columns.append(_Order(key=attr, order=order))
 
@@ -124,9 +125,11 @@ class RestQuery(object):
                     fkey, self.name
                 ))
             elif oper not in self.OPERATORS:
-                raise ValidationError(u'filter operation {0} is not support'.format(oper))
+                raise ValidationError(
+                    u'filter operation {0} is not support'.format(oper))
 
-            if oper == 'like' and not self.suffix_like and value.startswith('%'):
+            if oper == 'like' and not self.suffix_like and value.startswith(
+                    '%'):
                 raise ValidationError(u'suffix like is not support, you used at {0}={1}'.format(
                     key, value))
             elif oper in ['in', 'between']:
@@ -134,7 +137,7 @@ class RestQuery(object):
                 if oper == 'between' and len(value) != 2:
                     raise ValidationError(u'between value must be a range,'
                                           u' your query: {0}={1}'.format(
-                                           key, self.value_separator.join(value)))
+                                              key, self.value_separator.join(value)))
 
             return _Filter(key=fkey, op=oper, val=value)
 
@@ -189,18 +192,25 @@ class RestQuery(object):
         return query
 
     def generate_query(self, filters, processes, paginate):
-        show_query = self.get_show_query(self.model, processes.get('__show', []))
+        show_query = self.get_show_query(
+            self.model, processes.get('__show', []))
         filter_query = self.filter_query(self.model, show_query, filters)
         paginate_query = self.paginate_query(
             filter_query, paginate['__page'], paginate['__page_size'])
         return paginate_query
 
-    def generate_relation_query(self, filters, processes, paginate, rel_name, pk):
+    def generate_relation_query(
+            self, filters, processes, paginate, rel_name, pk):
 
         relation = self.relations[rel_name]
         relation_model = get_model_by_tablename(relation.table.fullname)
-        show_query = self.get_show_query(relation_model, processes.get('__show', []))
-        rel_query = show_query.filter(getattr(relation_model, relation.back_populates).any(id=pk))
+        show_query = self.get_show_query(
+            relation_model, processes.get('__show', []))
+        rel_query = show_query.filter(
+            getattr(
+                relation_model,
+                relation.back_populates).any(
+                id=pk))
         filter_query = self.filter_query(relation_model, rel_query, filters)
         paginate_query = self.paginate_query(
             filter_query, paginate['__page'], paginate['__page_size'])
@@ -248,7 +258,8 @@ class RestQuery(object):
             if rel_name not in self.relations:
                 raise ValidationError(u'{0} is not a relation of {1}'.format(
                     rel_name, self.name))
-            query = self.generate_relation_query(filters, processes, paginate, rel_name, pk)
+            query = self.generate_relation_query(
+                filters, processes, paginate, rel_name, pk)
         else:
             query = self.generate_query(filters, processes, paginate)
         result = [query_result2dict(item) for item in query]
@@ -271,7 +282,8 @@ class RestModel(object):
         self.app = app
         self.name = name
         self.model = model or get_model_by_tablename(name)
-        self.rest_query = RestQuery(app=self.app, name=self.name, model=self.model)
+        self.rest_query = RestQuery(
+            app=self.app, name=self.name, model=self.model)
         self.columns = self.rest_query.columns
         self._url_map = dict()
 
@@ -315,7 +327,9 @@ class RestModel(object):
         self.validate_keys(data.keys())
 
         if not self.model.get(_id):
-            raise ValidationError(u'id {0} of {1} not exists'.format(_id, self.name))
+            raise ValidationError(
+                u'id {0} of {1} not exists'.format(
+                    _id, self.name))
 
         self.model.query_update(query={'id': _id}, data=data)
         return self.model.get(_id).to_dict()
@@ -337,7 +351,8 @@ class RestModel(object):
             self.http_delete, '_'.join((self.name, self.http_delete.__name__)))
 
         bp.rest_route(rule=self.name + '/<__pk>/<__relation>', methods=['GET'])(
-            self.http_get, '_'.join((self.name, self.http_get.__name__, 'relations'))
+            self.http_get, '_'.join(
+                (self.name, self.http_get.__name__, 'relations'))
         )
 
         return bp

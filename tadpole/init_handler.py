@@ -24,10 +24,12 @@ class _PyConfigMixin(object):
     @staticmethod
     def process_custom_config(config_dict, custom_processes):
         config_lines, import_lines = list(), list()
-        
+
         if custom_processes:
-            for key in set(custom_processes).intersection(set(config_dict.keys())):
-                custom_imports, custom_config = custom_processes[key](key, config_dict.pop(key))
+            for key in set(custom_processes).intersection(
+                    set(config_dict.keys())):
+                custom_imports, custom_config = custom_processes[key](
+                    key, config_dict.pop(key))
                 import_lines.extend(custom_imports)
                 config_lines.extend(custom_config)
 
@@ -60,7 +62,8 @@ class _PyConfigMixin(object):
         config_dict, import_lines, config_lines = self.process_custom_config(
             config_dict, custom_processes)
 
-        keys = config_dict['__KEYS_ORDER'] if config_dict.get('__KEYS_ORDER') else config_dict.keys()
+        keys = config_dict['__KEYS_ORDER'] if config_dict.get(
+            '__KEYS_ORDER') else config_dict.keys()
 
         for key in keys:
             if key == '\n':
@@ -72,7 +75,8 @@ class _PyConfigMixin(object):
             config_lines.append(line)
 
         config_content = u"{headers}\n{import_lines}\n{config_lines}".format(
-            headers=config.TEMPLATE_HEADER, import_lines=u''.join(import_lines),
+            headers=config.TEMPLATE_HEADER, import_lines=u''.join(
+                import_lines),
             config_lines=u''.join(config_lines))
 
         if fmt_dict:
@@ -115,7 +119,7 @@ class _InitHandler(_PyConfigMixin):
         import_lines, config_lines = list(), list()
 
         if isinstance(workers, int) or (
-                    isinstance(workers, basestring) and workers.isdigit()):
+                isinstance(workers, basestring) and workers.isdigit()):
             config_lines.append('{0} = {1}\n'.format(key, workers))
         else:
             try:
@@ -128,7 +132,8 @@ class _InitHandler(_PyConfigMixin):
                 wp_cpu = 2
 
             import_lines.append("import multiprocessing\n")
-            config_lines.append("{0} = multiprocessing.cpu_count() * {1} \n".format(key, wp_cpu))
+            config_lines.append(
+                "{0} = multiprocessing.cpu_count() * {1} \n".format(key, wp_cpu))
 
         return import_lines, config_lines
 
@@ -148,7 +153,8 @@ class _InitHandler(_PyConfigMixin):
         # init config.py
         logger.debug("make config {0}".format(config.TEMPLATE_CONF_NAME))
         config_dict = self._get_project_config()
-        config_content = self.render_config(config_dict, fmt_dict=self.fmt_dict)
+        config_content = self.render_config(
+            config_dict, fmt_dict=self.fmt_dict)
         with codecs.open(config.TEMPLATE_CONF_NAME, "w", "utf-8") as cfp:
             cfp.write(config_content)
 
@@ -169,7 +175,9 @@ class _InitHandler(_PyConfigMixin):
             gfp.write(config_content)
 
     def _init_template(self):
-        logger.debug("gen %s file for start, stop ... actions" % self.project_name)
+        logger.debug(
+            "gen %s file for start, stop ... actions" %
+            self.project_name)
         with codecs.open("template.py", "r", "utf-8") as tfp:
             content = tfp.read()
 
@@ -177,7 +185,7 @@ class _InitHandler(_PyConfigMixin):
             content = content.replace("{{template}}", self.project_name)
             pfp.write(content)
 
-        os.chmod(self.project_name, 0740)
+        os.chmod(self.project_name, 0o740)
         os.remove("template.py")
 
     @staticmethod
@@ -203,7 +211,7 @@ class _InitHandler(_PyConfigMixin):
     @staticmethod
     def _init_dev():
         os.rename("dev.py", "dev")
-        os.chmod("dev", 0755)
+        os.chmod("dev", 0o755)
         return True
 
     @staticmethod
@@ -213,7 +221,10 @@ class _InitHandler(_PyConfigMixin):
     def _init_projects(self):
         time_start = time.time()
         logger.info("init project {0}".format(self.project_name))
-        logger.debug("copy from {0} to {1}".format(self.template_dir, self.work_dir))
+        logger.debug(
+            "copy from {0} to {1}".format(
+                self.template_dir,
+                self.work_dir))
         shutil.copytree(self.template_dir, self.work_dir)
         os.chdir(self.work_dir)
         self._make_dirs()
@@ -223,7 +234,9 @@ class _InitHandler(_PyConfigMixin):
         self._init_db()
         self._init_git()
         self._init_venv()
-        logger.info("init project success using %.3f seconds !!!" % (time.time() - time_start))
+        logger.info(
+            "init project success using %.3f seconds !!!" %
+            (time.time() - time_start))
 
     def __call__(self, *args, **kwargs):
         self._init_projects()
@@ -232,6 +245,7 @@ class _InitHandler(_PyConfigMixin):
 def do_init(project_name, version, owner, email):
     handler = _InitHandler(project_name, version, owner, email)
     return handler()
+
 
 # for test
 if __name__ == '__main__':

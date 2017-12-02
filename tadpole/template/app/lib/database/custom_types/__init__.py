@@ -12,4 +12,3 @@ from password import PasswordType as Password
 __all__ = (
     'Email', 'IpAddress', 'Password'
 )
-

@@ -23,6 +23,7 @@ def _make_context():
 def create_db():
     models.create_db()
 
+
 manager.add_command('url', ShowUrls())
 manager.add_command('clean', Clean())
 manager.add_command("shell", Shell(make_context=_make_context))

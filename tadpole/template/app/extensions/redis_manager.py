@@ -20,7 +20,8 @@ class RedisManager(Redis):
         self.connection_pool = None
 
     def init_app(self, app):
-        self.connection_conf = app.config.get('REDIS_CONFIG', self.connection_conf)
+        self.connection_conf = app.config.get(
+            'REDIS_CONFIG', self.connection_conf)
         self.connection_pool = ConnectionPool(**self.connection_conf)
 
 

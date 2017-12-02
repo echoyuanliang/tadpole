@@ -49,7 +49,9 @@ def get_gun_module():
         _gun = imp.load_source("gun", GUN_CONF)
         return _gun
     except Exception as e:
-        log_fatal("file {0} must exists, current error {1}".format(GUN_CONF, str(e)))
+        log_fatal(
+            "file {0} must exists, current error {1}".format(
+                GUN_CONF, str(e)))
 
 
 gun = get_gun_module()
@@ -61,6 +63,7 @@ def get_pidfile_path():
     except Exception as e:
         log_fatal("file {0} must exists and has pidfile conf item, current error: {1}".
                   format(GUN_CONF, str(e)))
+
 
 pid_file = get_pidfile_path()
 
@@ -147,21 +150,27 @@ def do_start():
 
     start_time = time.time()
     if service_alive():
-        log_fatal("service {0} has been started, can't be start twice".format(SERVICE_NAME))
+        log_fatal(
+            "service {0} has been started, can't be start twice".format(SERVICE_NAME))
 
     clear_pidfile()
-    gun_cmd = "venv/bin/python venv/bin/gunicorn -c {0} {1}".format(GUN_CONF, APP)
+    gun_cmd = "venv/bin/python venv/bin/gunicorn -c {0} {1}".format(
+        GUN_CONF, APP)
     status, output = execute_cmd(gun_cmd)
     if not status:
-        log_fatal("execute {0} failed, start {1} failed".format(gun_cmd, SERVICE_NAME))
+        log_fatal(
+            "execute {0} failed, start {1} failed".format(
+                gun_cmd, SERVICE_NAME))
 
     if not wait_start():
-        log_fatal("wait start  %s  for %.3f seconds failed" % (SERVICE_NAME, time.time() - start_time))
+        log_fatal("wait start  %s  for %.3f seconds failed" %
+                  (SERVICE_NAME, time.time() - start_time))
 
     if not do_status():
         log_fatal("start {0} failed".format(SERVICE_NAME))
 
-    log_info("start %s success using %.3f seconds" % (SERVICE_NAME, time.time() - start_time))
+    log_info("start %s success using %.3f seconds" %
+             (SERVICE_NAME, time.time() - start_time))
     return True
 
 
@@ -205,7 +214,9 @@ def do_stop():
 
     pid = read_pid()
     if not kill_process(pid, signal.SIGTERM):  # graceful stop
-        log_fatal("kill process {0} failed, stop {1} failed".format(pid, SERVICE_NAME))
+        log_fatal(
+            "kill process {0} failed, stop {1} failed".format(
+                pid, SERVICE_NAME))
 
     if not wait_stop():
         kill_process(read_pid(), signal.SIGQUIT)  # quick stop
@@ -221,7 +232,8 @@ def do_stop():
         log_fatal('process {0} still exists, stop {1}  failed'.format(
             ','.join([proc[0] for proc in processes]), SERVICE_NAME))
 
-    log_info("stop %s success using %.3f seconds" % (SERVICE_NAME, time.time() - start_time))
+    log_info("stop %s success using %.3f seconds" %
+             (SERVICE_NAME, time.time() - start_time))
     return True
 
 
@@ -229,7 +241,8 @@ def do_reload():
     start_time = time.time()
 
     if not service_alive():
-        log_info("service {0} has been stopped, start service.".format(SERVICE_NAME))
+        log_info(
+            "service {0} has been stopped, start service.".format(SERVICE_NAME))
         return do_start()
 
     pid = read_pid()
@@ -241,7 +254,8 @@ def do_reload():
     if not do_status():
         log_fatal("reload {0} failed".format(SERVICE_NAME))
 
-    log_info("reload %s success using %.3f seconds" % (SERVICE_NAME, time.time() - start_time))
+    log_info("reload %s success using %.3f seconds" %
+             (SERVICE_NAME, time.time() - start_time))
 
 
 def do_help():
