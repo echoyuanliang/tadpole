@@ -21,9 +21,8 @@ __license__ = "MIT"
 __copyright__ = "2017 - allen"
 
 
-description = """
-flask starter, support restful view , auto restful sqlalchemy model, auth and  permission
-"""
+description = "flask starter, support gunicorn start,stop,reload script and " \
+              "restful view , auto restful sqlalchemy model, auth and  permission"
 
 
 def package_files(directory):
