@@ -17,13 +17,13 @@ class User(Model):
     account = Column(
         db.String(128),
         nullable=False,
-        default='-',
+        default=u'-',
         index=True,
         unique=True)
-    name = Column(db.String(32), nullable=False, default='-')
-    email = Column(db.Email(128), nullable=False, default='-')
+    name = Column(db.String(32), nullable=False, default=u'-')
+    email = Column(db.Email(128), nullable=False, default=u'-')
     password = Column(db.Password(schemes=['pbkdf2_sha512', 'md5_crypt'],
-                                  deprecated=['md5_crypt']), nullable=False, default='-')
+                                  deprecated=['md5_crypt']), nullable=False, default=u'-')
 
     def validate_password(self, password):
         return self.password == password

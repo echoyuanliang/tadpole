@@ -11,10 +11,10 @@ from app.lib.database import MysqlModel as Model
 
 
 class Resource(Model):
-    rtype = Column(db.String(32), nullable=False, default='-')
-    name = Column(db.String(128), nullable=False, default='-')
-    operation = Column(db.String(32), nullable=False, default='-')
-    description = Column(db.String(128), nullable=False, default='-')
+    rtype = Column(db.String(32), nullable=False, default=u'-')
+    name = Column(db.String(128), nullable=False, default=u'-')
+    operation = Column(db.String(32), nullable=False, default=u'-')
+    description = Column(db.String(128), nullable=False, default=u'-')
 
 
 Index('name_operation_uc', Resource.name, Resource.operation, unique=True)

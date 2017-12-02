@@ -15,10 +15,10 @@ class Role(Model):
     name = Column(
         db.String(32),
         nullable=False,
-        default='-',
+        default=u'-',
         index=True,
         unique=True)
-    description = Column(db.String(128), nullable=False, default='-')
+    description = Column(db.String(128), nullable=False, default=u'-')
 
     users = db.relationship('User', secondary=user_role,
                             backref=db.backref('roles', lazy='dynamic'),
