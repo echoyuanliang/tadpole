@@ -95,7 +95,7 @@ class RestQuery(object):
                                   format(key, value))
 
         if key == '__show':
-            invalid_item = set(self.columns) - set(values)
+            invalid_item = set(values) - set(self.columns)
             if invalid_item:
                 raise ValidationError(u'{0} of your __show columns {1} is not'
                                       u' an attribute of {2}  '.format(
@@ -105,7 +105,7 @@ class RestQuery(object):
         elif key == '__order':
             order_by_columns = []
             for val in values:
-                if val.endsith(('.desc', '.asc')):
+                if val.endswith(('.desc', '.asc')):
                     attr, order = val.split('.')
                 else:
                     attr, order = val, self.default_order
@@ -158,7 +158,7 @@ class RestQuery(object):
     def get_show_query(model, show_columns):
         if show_columns:
             show_columns = [getattr(model, column) for column in show_columns]
-            return db.session.query(show_columns)
+            return db.session.query(*show_columns)
         else:
             return db.session.query(model)
 
