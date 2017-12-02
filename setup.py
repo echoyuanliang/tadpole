@@ -21,6 +21,11 @@ __license__ = "MIT"
 __copyright__ = "2017 - allen"
 
 
+description = """
+flask starter, support restful view , auto restful sqlalchemy model, auth and  permission
+"""
+
+
 def package_files(directory):
     paths = []
     for (path, directories, filenames) in os.walk(directory):
@@ -43,7 +48,7 @@ setup(
     license=__license__,
     author=__author__,
     author_email='echoyuanliang@gmail.com',
-    description="flask starter",
+    description=description,
     long_description=long_description,
     url='https://github.com/echoyuanliang/tadpole',
     download_url='https://github.com/echoyuanliang/tadpole.git',
