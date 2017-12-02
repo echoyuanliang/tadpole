@@ -8,7 +8,7 @@
 from copy import deepcopy
 from functools import wraps
 from flask import request, Flask, Response, current_app
-from app.lib.utils import flask_res
+from app.lib.utils import rest_response
 from app.lib.validator import Validator
 
 
@@ -48,10 +48,10 @@ class RestRoute(object):
     @staticmethod
     def post_process(result):
         if isinstance(result, (Response, Flask.response_class)):
-            # 用户已经封装好返回值
+            # use the response user return
             return result
         else:
-            return flask_res({
+            return rest_response({
                 'code': 200,
                 'msg': 'ok',
                 'result': result
@@ -64,7 +64,7 @@ class RestRoute(object):
         try:
             http_data.update(request.json)
         except Exception as e:
-            current_app.logger.info(u'no json data {0}'.format(str(e)))
+            current_app.logger.debug(u'no json data {0}'.format(str(e)))
 
         return http_data
 

@@ -11,4 +11,3 @@ from auth import *
 def create_db():
     from app.lib.database import db
     db.create_all()
-    User.query.all()

@@ -9,7 +9,7 @@ from flask import request, session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.lib.logger import init_logger
-from app.lib.utils import flask_res
+from app.lib.utils import rest_response
 from app.lib.exceptions import CustomError
 from app.lib.pine_wrapper import PineBlueprint
 from app.lib.rest_model import RestModel
@@ -48,9 +48,12 @@ class Init(object):
 
         @self._app.before_request
         def before_request():
+            # record real remote address
             ip_list = request.headers.getlist("X-Forwarded-For")
             session['remote_address'] = ip_list[0].split(
                 ',')[0] if ip_list else request.remote_addr
+
+            # auth  and permission check
             self.permission_auth_handler.validate_request_permission()
 
     def init_after(self):
@@ -58,6 +61,7 @@ class Init(object):
 
         @self._app.after_request
         def after_request(response):
+            # change server name
             response.headers['Server'] = self._app.config['APP_NAME']
             return response
 
@@ -66,14 +70,14 @@ class Init(object):
 
         @self._app.errorhandler(CustomError)
         def handler_custom_error(error):
-            return flask_res(data=error, code=error.code)
+            return rest_response(data=error, code=error.code)
 
         @self._app.errorhandler(SQLAlchemyError)
         def handler_db_error(error):
-            msg = u'DB操作失败: {0}'.format(str(error))
+            msg = u'db operation failed: {0}'.format(str(error))
             self._app.logger.exception(msg)
             data = {'code': 500, 'msg': msg}
-            return flask_res(data=data, code=500)
+            return rest_response(data=data, code=500)
 
     def init_extensions(self):
         from app import extensions

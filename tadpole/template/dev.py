@@ -24,8 +24,13 @@ def create_db():
     models.create_db()
 
 
+# show all urls of this application
 manager.add_command('url', ShowUrls())
+
+# clean pyc file
 manager.add_command('clean', Clean())
+
+# inspect into this application
 manager.add_command("shell", Shell(make_context=_make_context))
 
 

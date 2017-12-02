@@ -8,6 +8,7 @@
 from main import app
 
 
+# simple health check
 @app.rest_route("/health", methods=['GET', "HEAD"])
 def health_check(data):
     return dict(code=200, message="I'm OK!!!", data=data)

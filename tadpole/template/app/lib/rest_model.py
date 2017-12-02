@@ -29,6 +29,16 @@ class RestQuery(object):
     PROCESSES = ('__show', '__order')
     PAGINATE = ('__page', '__page_size')
 
+    """
+        show second page students' name , score where age=12 and score between
+        60 and name startswith allen
+
+        ::
+            age.lt=12&score.between=60,80&name.like=allen%&__show=name,score&_page=2
+
+        ::
+    """
+
     def __init__(self, app, name, model):
         self.app = app
         self.name = name
@@ -335,21 +345,27 @@ class RestModel(object):
         return self.model.get(_id).to_dict()
 
     def init_bp(self, bp):
+        # simple query
         bp.rest_route(rule=self.name, methods=['GET'])(
             self.http_get, '_'.join((self.name, self.http_get.__name__)))
 
+        # get by id
         bp.rest_route(rule=self.name + '/<id>', methods=['GET'])(
             self.http_get_pk, '_'.join((self.name, self.http_get_pk.__name__)))
 
+        # modify by id
         bp.rest_route(rule=self.name + '/<id>', methods=['PUT'])(
             self.http_put, '_'.join((self.name, self.http_put.__name__)))
 
+        # add record
         bp.rest_route(rule=self.name, methods=['POST'])(
             self.http_post, '_'.join((self.name, self.http_post.__name__)))
 
+        # delete by id
         bp.rest_route(rule=self.name + '/<id>', methods=['DELETE'])(
             self.http_delete, '_'.join((self.name, self.http_delete.__name__)))
 
+        # get relation by id
         bp.rest_route(rule=self.name + '/<__pk>/<__relation>', methods=['GET'])(
             self.http_get, '_'.join(
                 (self.name, self.http_get.__name__, 'relations'))

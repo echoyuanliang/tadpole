@@ -11,6 +11,7 @@ from app.lib.database import MysqlModel as Model
 
 class User(Model):
 
+    # columns in __hide__ does'nt show in rest_db
     __hide__ = ('password',)
 
     account = Column(

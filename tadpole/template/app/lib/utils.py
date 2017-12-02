@@ -15,7 +15,10 @@ from exceptions import RestHttpError
 
 
 class CustomJsonEncoder(json.JSONEncoder):
-
+    """
+    support custom json encoder, support  dict, tuple, set objects
+     and user define objects implement to_dict or _as_dict method jsonify.
+    """
     DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
     def default(self, obj):
@@ -41,7 +44,7 @@ class CustomJsonEncoder(json.JSONEncoder):
         return super(CustomJsonEncoder, self).default(obj)
 
 
-def flask_res(data=None, code=200):
+def rest_response(data=None, code=200):
     data = dict(msg='ok', code=200) if not data else data
     return Flask.response_class(json.dumps(
         data, cls=CustomJsonEncoder), status=code, mimetype='application/json')
@@ -52,6 +55,13 @@ def rest_abort(code):
 
 
 def get_bp_prefix(app, bp_name):
+    """
+
+    :param app:  flask app
+    :param bp_name:  the flask blueprint name need prefix
+    :return:  prefix for bp_name
+    """
+
     prefix_pattern = app.config.get('BP_PREFIX_PATTERN', '/api/{0}/{1}/')
     default_prefix = prefix_pattern.format(app.config['VERSION'], bp_name)
     if not app.config.get('BP_PREFIX', None):
