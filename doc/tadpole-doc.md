@@ -146,7 +146,7 @@ import到app/models/__init__.py中即可为其自动注册restful接口。
 联合使用这些查询条件:
 
 	
-	http://127.0.0.1:5000/api/v0.0.1/rest_db/user?name=tadpole&account.like=tad%&__show=account,email&__order=id.asc,name.desc	
+	curl http://127.0.0.1:5000/api/v0.0.1/rest_db/user?name=tadpole&account.like=tad%&__show=account,email&__order=id.asc,name.desc	
 	{
 	  "msg": "ok",
 	  "code": 200,
@@ -197,5 +197,141 @@ import到app/models/__init__.py中即可为其自动注册restful接口。
                                   deprecated=['md5_crypt']), nullable=False, default=u'-')
 
 声明Model时, `__hide__`元组中的列不会在自动生成的restful接口中展示
+
+
+### 6.2 登录控制和权限管理
+
+对于每一个应用来说,都有不适合对所有人开放的资源,因此需要登录控制和权限管理。tadpole默认在app/models/auth包中实现了用户和权限依赖的Model,
+在app/lib/auth.py中实现了有关登录和权限验证的逻辑。登录验证目前采用的是`Http Basic`认证, 因为密码是单向加密存储的,所以有些验证方法(如`Http Digest`)不能直接使用,有需求可以对代码进行扩展。扩展也十分容易,有兴趣的朋友可以阅读实现源码进行扩展。权限校验则是简单的查询数据库看用户有没有对某一资源执行某一操作的权限(此处也可以很容易扩展自己的校验方式),权限校验默认对restful接口的http method进行了支持,因此只需要在数据库中添加合适的记录既可以做到接口的权限控制。为了应用可以开箱即用,已经对`/api/v0.0.1/rest_db/`开头的url做了权限限制,其`POST,DELETE,PUT`方法仅有root权限用户可以操作,如:
+
+![role_resource](images/role_resource.png)
+
+![user_role](images/user_role.png)
+
+对于新初始化的项目,已经添加了`account=tadpole-demo,password=12qwaszx`的用户,并且赋予了root角色,可以执行`POST /api/v0.0.1/rest_db/*`测试权限校验是否正确。
+
+只需要把resource 和 role关联起来即可以仅开放给对应角色的用户。数据库中没有记录的resource以及没有关联role的resource是对所有人开放的。一个资源开放给的用户是资源名称可以正则匹配的到所有`resource.name`,且对资源的操作在`resource.operation`(用','分割)中的资源列表所开放给的角色所拥有的用户。 例如对于http restful接口的权限校验, 会拿出所有匹配path 和 method的resource,然后查询这些resource开放的role列表,要求用户只有满足所有这些role,才可以访问对应接口。
+
+
+### 6.3 关于rest_route
+
+对于restful接口来说, 一是参数的校验几乎都需要,二是希望可以返回python对象,由框架自动处理成json格式。rest_route对这些做了支持。
+如:
+
+	from main import app
+
+
+	validator = {
+	    'required': ['user_name']
+	}
+	
+	
+	@app.rest_route('/welcome', methods=['GET'], validator=validator)
+	def welcome(data):
+	    return 'hell0', data['user_name']
+
+首先validator中可以对参数进行校验,默认实现了几种常用校验,也可以自己扩充,除此之外还实现了custom校验,即传入用户自己的校验函数,这段代码提供了对user_name参数必填的校验。除此之外,为了提供统一的提交数据入口,所有提交数据都被merge到data参数中了,rest_route接口的POST方法必须提交json格式数据。最后返回一个元组,在rest_route中会自动将其转化为json list,请求这个接口返回如下:
+
+
+	curl http://127.0.0.1:5000/welcome
+	
+	
+	{
+	  "msg": "param user_name is required",
+	  "code": 400
+	}
+
+
+	curl http://127.0.0.1:5000/welcome?user_name=tadpole
+	
+	{
+	  "msg": "ok",
+	  "code": 200,
+	  "result": Array[2][
+	    "hell0",
+	    "tadpole"
+	  ]
+	}
+
+
+返回结果不仅支持直接返回元组,还支持sqlalchemy查询结果直接返回,set返回等等。对于用户自定义的对象如果要支持直接返回,只需要实现to_dict/_as_dict方法将对象转化成dict即可。
+
+### 6.3.1 默认支持的参数校验方式
+
+参数校验是通过app/lib/validator实现的,有兴趣的朋友可以直接看源码,实现很简单,也可以自己扩展。目前实现的校验方式有以下:
+
+* required: 必填参数列表, 用户必须填充但可以为空字符串. 数据类型为list
+* nonempty: 必填且不能为空参数列表。数据类型为list
+* types: 参数类型校验, 数据类型为dict,例如:
+
+
+		validator = {
+		    'types': {
+		    	'age': int,
+		    	'active': bool,
+		    }
+		}
+	
+* oneof: 如果参数名称位于oneof中,其值必须要属于`oneof[param_name]`中的一个,数据类型为dict
+* unique: 对list类型参数做去重,数据类型为list
+* length: 对参数长度组校验, 数据类型为dict
+* default: 对参数提供默认值, 数据类型为list
+* override: 用对参数处理后的结果取代参数的值,数据
+* custom: 用户自定义校验方法,数据类型为list
+
+例如:
+
+	validator = {
+	    'required': ['task_id'],  # 必填参数
+	
+	    'nonempty': ['project', 'env', 'ip_list', 'component'], # 不能为空
+	
+	    'types': {
+	        'ip_list': list,
+	        'mem': int
+	    },
+	    
+	    'unique': ['ip_list'], # 对ip_list参数去重
+	
+	    'default': {
+	        'region': 'Shanghai' # 如果用户没有填写region参数,则用Shanghai填充
+	    },
+	
+	    'oneof': {
+	        'region': ['Shanghai', 'Beijing'], # region参数必属于Shanghai和Beijing之一
+	    }
+	}
+
+
+### 6.3.2 关于异常处理
+
+已经实现了异常的自动捕捉,并返回合适的信息,默认提供的异常在app/lib/exceptions.py中,
+所有继承自CustomError的异常都会被捕捉,并且返回msg作为错误信息,code作为返回码,因此可以直接抛出这些异常给用户,
+不需要再进行处理。也可以扩展自定义的异常。默认异常定义示例:
+
+
+	class CustomError(Exception):
+
+    def __init__(self, msg):
+        super(CustomError, self).__init__(msg)
+        self.msg = msg
+        self.code = 500
+
+    def to_dict(self):
+        return dict(code=self.code, msg=self.msg)
+
+    def __unicode__(self):
+        return unicode(self.msg)
+
+    def __str__(self):
+        return str(self.msg)
+
+
+	class InternalError(CustomError):
+	
+	    def __init__(self, msg):
+	        super(InternalError, self).__init__(msg)
+	        self.code = 500
+
 
 
