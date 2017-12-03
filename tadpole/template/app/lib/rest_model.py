@@ -20,8 +20,7 @@ _Filter = namedtuple('_Filter', ['key', 'op', 'val'])
 _Order = namedtuple('_Order', ['key', 'order'])
 
 
-class RestQuery(object):
-
+class ModelWrapper(object):
     OPERATORS = ('lt', 'le', 'gt', 'ge', 'eq', 'like', 'in', 'between')
 
     # use __ prefix distinct with model columns
@@ -29,22 +28,11 @@ class RestQuery(object):
     PROCESSES = ('__show', '__order')
     PAGINATE = ('__page', '__page_size')
 
-    """
-        show second page students' name , score where age=12 and score between
-        60 and name startswith allen
-
-        ::
-            age.lt=12&score.between=60,80&name.like=allen%&__show=name,score&_page=2
-
-        ::
-    """
-
     def __init__(self, app, name, model):
         self.app = app
         self.name = name
         self.model = model
         self.columns = self.model.get_column_names()
-        self.relations = inspect(self.model).relationships
         self.default_page_size = self.app.config.get('DEFAULT_PAGE_SIZE', 200)
         self.min_page_size = self.app.config.get('MIN_PAGE_SIZE', 10)
         self.max_page_size = self.app.config.get('MAX_PAGE_SIZE', 1000)
@@ -81,14 +69,10 @@ class RestQuery(object):
             except ValueError:
                 raise ValidationError(page_size_error)
 
-            if self.min_page_size < page_size < self.max_page_size:
-                return page_size
-
-            raise ValidationError(page_size_error)
+            return max(min(page_size, self.max_page_size), self.min_page_size)
 
     def parse_process(self, key, value):
         assert key in self.PROCESSES
-
         values = [item.strip() for item in value.split(self.value_separator)]
         if not values:
             raise ValidationError(u'{0} must not empty, your value is {1}'.
@@ -99,7 +83,7 @@ class RestQuery(object):
             if invalid_item:
                 raise ValidationError(u'{0} of your __show columns {1} is not'
                                       u' an attribute of {2}  '.format(
-                                          u','.join(invalid_item), value, self.name))
+                                       u','.join(invalid_item), value, self.name))
 
             return values
         elif key == '__order':
@@ -113,7 +97,7 @@ class RestQuery(object):
                 if attr not in self.columns:
                     raise ValidationError(u'{0}  of your __order_by columns '
                                           u'is not an attribute of {1}'.format(
-                                              attr, value, self.name))
+                                           attr, value, self.name))
 
                 order_by_columns.append(_Order(key=attr, order=order))
 
@@ -135,11 +119,9 @@ class RestQuery(object):
                     fkey, self.name
                 ))
             elif oper not in self.OPERATORS:
-                raise ValidationError(
-                    u'filter operation {0} is not support'.format(oper))
+                raise ValidationError(u'filter operation {0} is not support'.format(oper))
 
-            if oper == 'like' and not self.suffix_like and value.startswith(
-                    '%'):
+            if oper == 'like' and not self.suffix_like and value.startswith('%'):
                 raise ValidationError(u'suffix like is not support, you used at {0}={1}'.format(
                     key, value))
             elif oper in ['in', 'between']:
@@ -147,28 +129,26 @@ class RestQuery(object):
                 if oper == 'between' and len(value) != 2:
                     raise ValidationError(u'between value must be a range,'
                                           u' your query: {0}={1}'.format(
-                                              key, self.value_separator.join(value)))
+                                           key, self.value_separator.join(value)))
 
             return _Filter(key=fkey, op=oper, val=value)
 
         raise ValidationError(u'invalid filter {0} for {1}'.format(
             key, self.name))
 
-    @staticmethod
-    def get_show_query(model, show_columns):
+    def get_show_query(self, show_columns):
         if show_columns:
-            show_columns = [getattr(model, column) for column in show_columns]
+            show_columns = [getattr(self.model, column) for column in show_columns]
             return db.session.query(*show_columns)
         else:
-            return db.session.query(model)
+            return db.session.query(self.model)
 
-    @staticmethod
-    def order_query(model, query, orders):
+    def order_query(self, query, orders):
         for order in orders:
             if order.order == 'desc':
-                query = query.order_by(getattr(model, order.key))
+                query = query.order_by(getattr(self.model, order.key))
             else:
-                query = query.order_by(-getattr(model, order.key))
+                query = query.order_by(-getattr(self.model, order.key))
 
         return query
 
@@ -177,11 +157,10 @@ class RestQuery(object):
         offset = (page - 1) * page_size
         return query.offset(offset).limit(page_size)
 
-    @staticmethod
-    def filter_query(model, query, filters):
+    def filter_query(self, query, filters):
 
         for query_filter in filters:
-            filter_column = getattr(model, query_filter.key)
+            filter_column = getattr(self.model, query_filter.key)
             if query_filter.op == 'eq':
                 query = query.filter(filter_column == query_filter.val)
             elif query_filter.op == 'lt':
@@ -200,32 +179,6 @@ class RestQuery(object):
                 query = query.filter(filter_column.between(*query_filter.val))
 
         return query
-
-    def generate_query(self, filters, processes, paginate):
-        show_query = self.get_show_query(
-            self.model, processes.get('__show', []))
-        filter_query = self.filter_query(self.model, show_query, filters)
-        paginate_query = self.paginate_query(
-            filter_query, paginate['__page'], paginate['__page_size'])
-        return paginate_query
-
-    def generate_relation_query(
-            self, filters, processes, paginate, rel_name, pk):
-
-        relation = self.relations[rel_name]
-        relation_model = get_model_by_tablename(relation.table.fullname)
-        show_query = self.get_show_query(
-            relation_model, processes.get('__show', []))
-        rel_query = show_query.filter(
-            getattr(
-                relation_model,
-                relation.back_populates).any(
-                id=pk))
-        filter_query = self.filter_query(relation_model, rel_query, filters)
-        paginate_query = self.paginate_query(
-            filter_query, paginate['__page'], paginate['__page_size'])
-
-        return paginate_query
 
     @staticmethod
     def get_prev_link(params, paginate):
@@ -246,7 +199,6 @@ class RestQuery(object):
         processes = dict()
         paginate = dict()
         filters = []
-
         params.setdefault('__page', 1)
         params.setdefault('__page_size', self.default_page_size)
         for key, value in params.items():
@@ -259,20 +211,17 @@ class RestQuery(object):
 
         return processes, filters, paginate
 
-    def query(self, params):
-        rel_name = params.pop('__relation', None)
-        pk = params.pop('__pk', None)
-
+    def do_query(self, params, relation=None, pk=None):
         processes, filters, paginate = self.parse_params(params)
-        if rel_name and pk:
-            if rel_name not in self.relations:
-                raise ValidationError(u'{0} is not a relation of {1}'.format(
-                    rel_name, self.name))
-            query = self.generate_relation_query(
-                filters, processes, paginate, rel_name, pk)
+        show_query = self.get_show_query(processes.get('__show', []))
+        if relation and pk is not None:
+            rel_query = show_query.filter(getattr(self.model, relation.back_populates).any(id=pk))
+            filter_query = self.filter_query(rel_query, filters)
         else:
-            query = self.generate_query(filters, processes, paginate)
-        result = [query_result2dict(item) for item in query]
+            filter_query = self.filter_query(show_query, filters)
+        paginate_query = self.paginate_query(
+            filter_query, paginate['__page'], paginate['__page_size'])
+        result = [query_result2dict(item) for item in paginate_query]
 
         return {
             'result': result,
@@ -281,6 +230,44 @@ class RestQuery(object):
             'prev_page': self.get_prev_link(params, paginate),
             'next_page': self.get_next_link(params, paginate)
         }
+
+
+class RestQuery(object):
+
+    def __init__(self, app, name, model):
+        self.app = app
+        self.name = name
+        self.model = ModelWrapper(app=self.app, name=name, model=model)
+        self.relations = inspect(model).relationships
+        self.relation_models = self.init_relation_models()
+
+    def init_relation_models(self):
+        relation_models = dict()
+        for rel_name, relation in self.relations.items():
+            rel_table_name = relation.table.fullname
+            relation_model = get_model_by_tablename(rel_table_name)
+            relation_models[rel_name] = ModelWrapper(app=self.app, name=rel_table_name, model=relation_model)
+
+        return relation_models
+
+    def do_self_query(self, params):
+        return self.model.do_query(params)
+
+    def do_relation_query(self, params, rel_name, pk):
+        relation = self.relations[rel_name]
+        relation_model = self.relation_models[rel_name]
+        return relation_model.do_query(params, relation, pk)
+
+    def query(self, params):
+        rel_name = params.pop('__relation', None)
+        pk = params.pop('__pk', None)
+        if rel_name and pk is not None:
+            if rel_name not in self.relations:
+                raise ValidationError(u'{0} is not a relation of {1}'.format(
+                    rel_name, self.name))
+            return self.do_relation_query(params, rel_name, pk)
+        else:
+            return self.do_self_query(params)
 
     def __call__(self, params):
         return self.query(params)
@@ -292,17 +279,16 @@ class RestModel(object):
         self.app = app
         self.name = name
         self.model = model or get_model_by_tablename(name)
-        self.rest_query = RestQuery(
-            app=self.app, name=self.name, model=self.model)
-        self.columns = self.rest_query.columns
+        self.rest_query = RestQuery(app=self.app, name=self.name, model=self.model)
         self._url_map = dict()
 
-    def validate_keys(self, keys):
-        invalid_keys = frozenset(keys) - frozenset(self.columns)
+    @staticmethod
+    def validate_keys(table_name, columns, keys):
+        invalid_keys = frozenset(keys) - frozenset(columns)
 
         if invalid_keys:
             raise ValidationError(u'{0} is not attributes of {1}'.format(
-                u','.join(invalid_keys), self.name))
+                u','.join(invalid_keys), table_name))
 
         return True
 
@@ -317,7 +303,7 @@ class RestModel(object):
         if data.pop('id', None):
             raise ValidationError(u"id can't be specified when post")
 
-        self.validate_keys(data.keys())
+        self.validate_keys(self.name, self.model.get_column_names(), data.keys())
         item = self.model(**data)
         return item.save().to_dict()
 
@@ -334,41 +320,32 @@ class RestModel(object):
 
     def http_put(self, data):
         _id = data.pop('id')
-        self.validate_keys(data.keys())
+        self.validate_keys(self.name, self.model.get_column_names(), data.keys())
 
         if not self.model.get(_id):
-            raise ValidationError(
-                u'id {0} of {1} not exists'.format(
-                    _id, self.name))
+            raise ValidationError(u'id {0} of {1} not exists'.format(_id, self.name))
 
         self.model.query_update(query={'id': _id}, data=data)
         return self.model.get(_id).to_dict()
 
     def init_bp(self, bp):
-        # simple query
         bp.rest_route(rule=self.name, methods=['GET'])(
             self.http_get, '_'.join((self.name, self.http_get.__name__)))
 
-        # get by id
         bp.rest_route(rule=self.name + '/<id>', methods=['GET'])(
             self.http_get_pk, '_'.join((self.name, self.http_get_pk.__name__)))
 
-        # modify by id
         bp.rest_route(rule=self.name + '/<id>', methods=['PUT'])(
             self.http_put, '_'.join((self.name, self.http_put.__name__)))
 
-        # add record
         bp.rest_route(rule=self.name, methods=['POST'])(
             self.http_post, '_'.join((self.name, self.http_post.__name__)))
 
-        # delete by id
         bp.rest_route(rule=self.name + '/<id>', methods=['DELETE'])(
             self.http_delete, '_'.join((self.name, self.http_delete.__name__)))
 
-        # get relation by id
         bp.rest_route(rule=self.name + '/<__pk>/<__relation>', methods=['GET'])(
-            self.http_get, '_'.join(
-                (self.name, self.http_get.__name__, 'relations'))
+            self.http_get, '_'.join((self.name, self.http_get.__name__, 'relations'))
         )
 
         return bp
