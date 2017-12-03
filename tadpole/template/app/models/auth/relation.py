@@ -11,7 +11,7 @@ from app.lib.database import db, Column
 user_role = db.Table('user_role',
                      Column('user_id', db.Integer, db.ForeignKey('user.id')),
                      Column('role_id', db.Integer, db.ForeignKey('role.id')),
-                     Column('create_date', db.DateTime, nullable=False, default=datetime.now))
+                     Column('create_time', db.DateTime, nullable=False, default=datetime.now))
 
 
 role_resource = db.Table('role_resource',
@@ -23,4 +23,4 @@ role_resource = db.Table('role_resource',
                              'resource_id',
                              db.Integer,
                              db.ForeignKey('resource.id')),
-                         Column('create_date', db.DateTime, nullable=False, default=datetime.now))
+                         Column('create_time', db.DateTime, nullable=False, default=datetime.now))
