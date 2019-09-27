@@ -1,7 +1,7 @@
 Active-Alchemy==1.0.0
 arrow==0.10.0
 click==6.7
-Flask==0.12.2
+Flask==1.0
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
 gunicorn==19.7.1
