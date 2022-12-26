@@ -21,4 +21,4 @@ six==1.11.0
 SQLAlchemy==1.1.15
 SQLAlchemy-Utils==0.32.19
 Werkzeug==0.12.2
-wheel==0.24.0
+wheel==0.38.1
